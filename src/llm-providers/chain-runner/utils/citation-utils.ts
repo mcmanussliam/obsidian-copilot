@@ -176,7 +176,7 @@ interface SourcesSection {
  *   2. Horizontal rule separator (---) followed by footnote definitions
  *   3. Trailing block of bare footnote definitions with no separator
  */
-export function extractSourcesSection(content: string): SourcesSection | null {
+function extractSourcesSection(content: string): SourcesSection | null {
   // Strategy 1: Explicit "Sources" heading (original behavior)
   const sourcesRegex = /([\s\S]*?)\n+(?:####\s*)?Sources\s*:?\s*\n+([\s\S]*)$/i;
   const match = content.match(sourcesRegex);
@@ -285,7 +285,7 @@ function buildCitationMap(mainContent: string, footnoteLines: string[]): Map<num
 /**
  * Normalizes citations in content using the provided mapping.
  */
-export function normalizeCitations(content: string, map: Map<number, number>): string {
+function normalizeCitations(content: string, map: Map<number, number>): string {
   // Already-footnote refs: [^n] -> [n] (remapped contiguously)
   // Use global flag with multiple passes to handle consecutive citations like [^7][^8]
   let result = content;
@@ -415,7 +415,7 @@ function consolidateDuplicateSources(items: string[]): {
  * Updates citations in content to reflect consolidated numbering.
  * Deduplicates within each bracket group after remapping.
  */
-export function updateCitationsForConsolidation(
+function updateCitationsForConsolidation(
   content: string,
   consolidationMap: Map<number, number>
 ): string {
@@ -442,7 +442,7 @@ export function updateCitationsForConsolidation(
  * connectors like " and " or ", " ([1] and [1]).
  * Only collapses when the second bracket is a subset of the first.
  */
-export function deduplicateAdjacentCitations(content: string): string {
+function deduplicateAdjacentCitations(content: string): string {
   let result = content;
   let prev;
   do {

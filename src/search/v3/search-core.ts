@@ -335,7 +335,7 @@ export class SearchCore {
  * @param limit - Maximum results to return
  * @returns Diverse top-K results, sorted by score descending
  */
-export function selectDiverseTopK(results: NoteIdRank[], limit: number): NoteIdRank[] {
+function selectDiverseTopK(results: NoteIdRank[], limit: number): NoteIdRank[] {
   if (results.length <= limit) {
     return results;
   }

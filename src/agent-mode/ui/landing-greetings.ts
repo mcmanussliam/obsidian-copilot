@@ -5,7 +5,7 @@
  * Keep entries short, friendly, and assistant-neutral (no name interpolation —
  * Obsidian doesn't expose one).
  */
-export const LANDING_GREETINGS: readonly string[] = Object.freeze([
+const LANDING_GREETINGS: readonly string[] = Object.freeze([
   "What can I help with?",
   "Where should we start?",
   "What's on your mind?",

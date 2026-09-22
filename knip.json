@@ -4,10 +4,13 @@
     "src/main.ts",
     "dev/gallery/main.ts",
     "src/**/*.stories.{ts,tsx}",
-    "scripts/debug/print-prompt-debug.js",
     "scripts/debug/print-prompt-debug-entry.ts"
   ],
   "project": ["src/**/*.{ts,tsx,js,jsx}", "tests/**/*.{ts,tsx}", "dev/gallery/**/*.{ts,tsx}", "scripts/**/*.{ts,js,mjs}"],
-  "ignore": ["src/styles/tailwind.css"],
-  "ignoreDependencies": ["buffer"]
+  "ignore": [
+    "scripts/build/patch-renderer-unsafe-unref.js",
+    "scripts/debug/stubs/obsidian.ts",
+    "scripts/review/stylelint-github-formatter.mjs"
+  ],
+  "ignoreDependencies": ["buffer", "electron"]
 }

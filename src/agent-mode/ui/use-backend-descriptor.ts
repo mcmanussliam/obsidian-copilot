@@ -32,18 +32,13 @@ function managedInstallActionStateSignature(state: ManagedInstallActionState): s
   }
 }
 
-/** Resolve the active (default) backend descriptor from settings. */
-export function useActiveBackendDescriptor(): BackendDescriptor {
-  return getActiveBackendDescriptor(useSettingsValue());
-}
-
 /**
  * Resolve the descriptor for the currently active *session*'s backend.
  * Falls back to the default backend descriptor when there is no active
  * session (e.g. the no-session fallback view, or before auto-spawn lands).
  *
  * Status pills, install CTAs, and other session-scoped UI should prefer
- * this over `useActiveBackendDescriptor` so the displayed display name /
+ * this over the settings-default descriptor so the displayed display name /
  * version / install handler matches the running session — which can be on
  * a non-default backend after a cross-backend model pick + new tab.
  */

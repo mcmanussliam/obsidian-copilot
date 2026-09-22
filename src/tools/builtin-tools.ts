@@ -247,7 +247,7 @@ newText: "## Attendees\\n- John Smith\\n- Jane Doe\\n- Bob Johnson"`,
 /**
  * Register the file tree tool separately as it needs vault access
  */
-export function registerFileTreeTool(app: App): void {
+function registerFileTreeTool(app: App): void {
   const registry = ToolRegistry.getInstance();
 
   registry.register({
@@ -277,7 +277,7 @@ Example queries that should use getFileTree:
 /**
  * Register the tag list tool separately to ensure metadata cache access is available.
  */
-export function registerTagListTool(app: App): void {
+function registerTagListTool(app: App): void {
   const registry = ToolRegistry.getInstance();
 
   registry.register({
@@ -306,7 +306,7 @@ Examples:
 /**
  * Register the memory tool separately as it depends on saved memory setting
  */
-export function registerMemoryTool(app: App): void {
+function registerMemoryTool(app: App): void {
   const registry = ToolRegistry.getInstance();
 
   registry.register({
@@ -332,7 +332,7 @@ Example: statement: "I'm studying Japanese and I'm preparing for JLPT N3"`,
  * Register desktop-only Obsidian CLI tools.
  * These tools are completely invisible on mobile — not registered, not shown in any UI.
  */
-export function registerCliTools(): void {
+function registerCliTools(): void {
   const registry = ToolRegistry.getInstance();
 
   registry.register({

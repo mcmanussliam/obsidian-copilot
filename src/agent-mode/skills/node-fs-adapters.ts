@@ -61,7 +61,7 @@ async function nodeReadlinkAbs(p: string): Promise<string | null> {
  * {@link SymlinksFs} surface. Reused by migration, toggle, and
  * reconcile logic.
  */
-export function createNodeSymlinksFs(): SymlinksFs {
+function createNodeSymlinksFs(): SymlinksFs {
   const fs = requireNodeModule<typeof import("node:fs")>("fs");
   const path = requireNodeModule<typeof import("node:path")>("path");
   return {

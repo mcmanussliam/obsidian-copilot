@@ -149,7 +149,7 @@ function claudeCompatibilityInput(
  * `getInstallState` logic: explicit override wins, otherwise the resolver
  * walks Volta/asdf/NVM/Homebrew/npm-global.
  */
-export function resolveClaudeCliPath(settings: CopilotSettings): string | null {
+function resolveClaudeCliPath(settings: CopilotSettings): string | null {
   return resolveClaudeBinary({
     override: settings.agentMode?.claudeCli?.path,
     ...claudeResolverEnv(),

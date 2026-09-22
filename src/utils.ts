@@ -16,7 +16,7 @@ import { MemoryVariables } from "@langchain/core/memory";
 import { DateTime } from "luxon";
 import { App, MarkdownView, Notice, TFile, Vault, normalizePath, requestUrl } from "obsidian";
 import { CustomModel } from "./ai-params";
-export { checkModelApiKey, err2String, getProviderLabel } from "@/lib/model-display-utils";
+export { err2String } from "@/lib/model-display-utils";
 
 /**
  * Unified type for fetch implementation.
@@ -828,14 +828,6 @@ function createReadableStreamFromString(input: string) {
 
 // err2String is now exported from '@/errorFormat' to avoid circular dependencies and duplication.
 
-export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
-  const result = { ...obj };
-  keys.forEach((key) => {
-    delete result[key];
-  });
-  return result;
-}
-
 // Capabilities can be undefined when a model's vision support is simply unknown;
 // callers that hard-block on missing vision must treat undefined as "unknown", not "no".
 export function modelSupportsVision(model: CustomModel): boolean {
@@ -994,8 +986,6 @@ export async function insertIntoEditor(app: App, message: string, replace: boole
 
   finalizeInsertion();
 }
-
-export { debounce } from "@/utils/debounce";
 
 /**
  * Whether a released version has a newer major/minor/patch than the installed build.

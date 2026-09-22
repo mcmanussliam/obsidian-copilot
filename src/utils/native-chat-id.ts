@@ -8,7 +8,7 @@
  */
 
 /** `ChatHistoryItem.id` prefix marking a native-store (no markdown file) entry. */
-export const NATIVE_CHAT_ID_PREFIX = "copilot-agent-session://";
+const NATIVE_CHAT_ID_PREFIX = "copilot-agent-session://";
 
 /** Encode a (backendId, sessionId) pair as a history-item id. */
 export function buildNativeChatId(backendId: string, sessionId: string): string {

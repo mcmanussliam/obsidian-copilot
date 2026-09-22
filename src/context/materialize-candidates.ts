@@ -10,7 +10,7 @@ import { App, TFile } from "obsidian";
  * edit modal's Content Conversion panel can enumerate candidates without pulling
  * in the materializer's heavyweight dependency graph.
  */
-export const MATERIALIZE_EXTENSIONS = new Set([
+const MATERIALIZE_EXTENSIONS = new Set([
   "pdf",
   "doc",
   "docx",

@@ -31,18 +31,9 @@ import {
   createDefaultPermissionPrompter,
 } from "./ui/permission-prompter";
 
-export { AGENT_CHAT_MODE } from "@/constants";
-export { AgentModeChat } from "./ui/agent-mode-chat";
 export { default as CopilotAgentView } from "./ui/copilot-agent-view";
-export {
-  useActiveBackendDescriptor,
-  useBackendInstallState,
-  useManagedInstallActionState,
-  useSessionBackendDescriptor,
-} from "./ui/use-backend-descriptor";
-export { useAgentModelPicker } from "./ui/use-agent-model-picker";
+export { useBackendInstallState, useManagedInstallActionState } from "./ui/use-backend-descriptor";
 export type { AgentModelPickerOverride } from "./ui/use-agent-model-picker";
-export { useAgentModePicker } from "./ui/use-agent-mode-picker";
 export type { AgentModePickerOverride } from "./ui/use-agent-mode-picker";
 export type { AgentSessionManager } from "./session/agent-session-manager";
 export type {
@@ -54,12 +45,8 @@ export type {
   ManagedInstallActionState,
 } from "./session/types";
 export { partitionOpencodeOnlyWireIds } from "./backends/opencode/opencode-probe-partition";
-export {
-  mapProviderToOpencodeId,
-  isOpencodeZenWireId,
-} from "./backends/opencode/opencode-model-resolve";
+export { mapProviderToOpencodeId } from "./backends/opencode/opencode-model-resolve";
 export type { OpencodeProviderMapping } from "./backends/opencode/opencode-model-resolve";
-export { installBadge, InstallBadge } from "./backends/shared/install-status";
 export type {
   BackendState,
   CopilotMode,
@@ -78,25 +65,17 @@ export type { ReportIssueModalParams } from "./ui/report-issue-modal";
 export {
   backendDisplayOrder,
   backendNeedsSelfHostWarning,
-  getActiveBackendDescriptor,
-  getCloudAgentIds,
   listBackendDescriptors,
-  RECOMMENDED_BACKEND_ID,
 } from "./backends/registry";
 export { frameSink as acpFrameSink, setFrameSinkVaultBasePath } from "./session/debug-sink";
-export { getManagedSkills, SkillManager, SkillsSettings, useManagedSkills } from "./skills";
+export { getManagedSkills, SkillManager, SkillsSettings } from "./skills";
 export type { Skill } from "./skills";
 /**
  * True when the platform supports Agent Mode. Agent Mode is always on, but
  * requires subprocess support, so this is always false on mobile.
  */
-export function isAgentModeEnabled(): boolean {
+function isAgentModeEnabled(): boolean {
   return !Platform.isMobile;
-}
-
-/** Hook variant for symmetry with other settings-derived hooks. */
-export function useIsAgentModeEnabled(): boolean {
-  return isAgentModeEnabled();
 }
 
 /**

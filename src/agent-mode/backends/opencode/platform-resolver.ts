@@ -56,7 +56,7 @@ export function mapNodeArch(nodeArch: string): OpencodeArch | undefined {
  * Best-effort musl libc detection. Linux only; returns false on other OSes.
  * Falls back to false if probes fail (glibc is the safer default).
  */
-export async function detectMusl(): Promise<boolean> {
+async function detectMusl(): Promise<boolean> {
   if (process.platform !== "linux") return false;
   const fs = requireNodeModule<typeof import("node:fs")>("fs");
   const { execFile: execFileCb } =
@@ -82,7 +82,7 @@ export async function detectMusl(): Promise<boolean> {
  * fails — modern hardware is the safer default and the manager already
  * falls back to the non-baseline asset if the baseline asset is missing.
  */
-export async function detectAvx2(): Promise<boolean> {
+async function detectAvx2(): Promise<boolean> {
   if (process.arch !== "x64") return false;
   const fs = requireNodeModule<typeof import("node:fs")>("fs");
   const { execFile: execFileCb } =

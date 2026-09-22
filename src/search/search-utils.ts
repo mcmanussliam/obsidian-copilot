@@ -541,15 +541,6 @@ export function getFilePattern(file: TFile): string {
 }
 
 /**
- * Generate extension pattern from user input.
- * Note: User input is used as-is. If user inputs ".md", the result will be "*..md".
- * This is intentional - user is responsible for correct input format (e.g., "md" not ".md").
- */
-export function getExtensionPattern(extension: string): string {
-  return `*.${extension}`;
-}
-
-/**
  * Get a list of internal Copilot file paths that must be excluded from searches.
  * Includes the rolling log file path (e.g., "copilot/copilot-log.md").
  */

@@ -231,10 +231,6 @@ export function getChainType(): ChainType {
   return settingsStore.get(chainTypeAtom);
 }
 
-export function setChainType(chainType: ChainType) {
-  settingsStore.set(chainTypeAtom, chainType);
-}
-
 export function subscribeToChainTypeChange(callback: () => void): () => void {
   return settingsStore.sub(chainTypeAtom, callback);
 }

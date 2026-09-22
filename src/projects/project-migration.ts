@@ -249,9 +249,7 @@ function getMigrationFolderName(projectId: string, projectName?: string): string
  *
  * @param app - Obsidian App instance
  */
-export async function migrateProjectsFromSettingsToVault(
-  app: App
-): Promise<StartupMigrationItem | null> {
+async function migrateProjectsFromSettingsToVault(app: App): Promise<StartupMigrationItem | null> {
   // One root for the whole pass. This runs on layout-ready and loops with awaits
   // per project, so re-reading the live root mid-pass could plan against one
   // tree and write into another.

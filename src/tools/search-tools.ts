@@ -259,23 +259,6 @@ async function performLexicalSearch({
   return { type: "local_search", documents: allDocs, queryExpansion };
 }
 
-// Explicit lexical-search tool for callers that do not want Miyo routing.
-const createLexicalSearchTool = (app: App) =>
-  createLangChainTool({
-    name: "lexicalSearch",
-    description: "Search for notes using lexical/keyword-based search",
-    schema: localSearchSchema,
-    func: async ({ timeRange: rawTimeRange, query, salientTerms }) => {
-      const timeRange = validateTimeRange(rawTimeRange);
-      return await performLexicalSearch({
-        app,
-        timeRange,
-        query,
-        salientTerms,
-      });
-    },
-  });
-
 /**
  * Validate and sanitize time range to prevent LLM hallucinations.
  * Returns undefined if the time range is invalid, incomplete, or nonsensical.
@@ -488,4 +471,4 @@ const webSearchTool = createLangChainTool({
   },
 });
 
-export { createLexicalSearchTool, createLocalSearchTool, webSearchTool };
+export { createLocalSearchTool, webSearchTool };

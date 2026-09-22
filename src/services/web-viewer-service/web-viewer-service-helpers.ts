@@ -25,7 +25,7 @@ import {
 /**
  * Check if a value is a non-null object record.
  */
-export function isRecord(value: unknown): value is Record<string, unknown> {
+function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
@@ -58,7 +58,7 @@ export function toErrorMessage(err: unknown): string {
 /**
  * Delay for the provided number of milliseconds.
  */
-export async function delay(ms: number): Promise<void> {
+async function delay(ms: number): Promise<void> {
   await new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 }
 
@@ -92,7 +92,7 @@ export async function waitFor(
 /**
  * Resolve a potentially-relative URL against a base URL.
  */
-export function resolveUrl(rawUrl: string, baseUrl: string): string {
+function resolveUrl(rawUrl: string, baseUrl: string): string {
   const input = (rawUrl ?? "").trim();
   if (!input) return "";
   if (!baseUrl) return input;
@@ -107,7 +107,7 @@ export function resolveUrl(rawUrl: string, baseUrl: string): string {
  * Format a Markdown link destination safely.
  * Wraps URLs containing spaces or parentheses in angle brackets.
  */
-export function formatMarkdownDestination(url: string): string {
+function formatMarkdownDestination(url: string): string {
   const u = (url ?? "").trim();
   if (!u) return "";
   return /[\s)]/.test(u) ? `<${u}>` : u;
@@ -117,7 +117,7 @@ export function formatMarkdownDestination(url: string): string {
  * Create a TurndownService configured for Obsidian-friendly Markdown output.
  * @param baseUrl - Base URL for resolving relative links and images
  */
-export function createTurndown(baseUrl: string): TurndownService {
+function createTurndown(baseUrl: string): TurndownService {
   const td = new TurndownService({
     headingStyle: "atx",
     hr: "---",

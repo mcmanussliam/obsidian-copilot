@@ -994,5 +994,3 @@ export const AgentHome: React.FC<AgentHomeProps> = (props) => {
     </ChatInputProvider>
   );
 };
-
-export default AgentHome;

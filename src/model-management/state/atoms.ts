@@ -59,7 +59,7 @@ export const copilotPlusCatalogAtom = atom<Readonly<PersistedCopilotPlusCatalog>
 
 /** Self-Host Mode toggle, isolated so the picker view recomputes only when the
  *  flag flips — not on every unrelated settings write. */
-export const selfHostModeAtom = atom<boolean>((get) => get(settingsAtom).enableSelfHostMode);
+const selfHostModeAtom = atom<boolean>((get) => get(settingsAtom).enableSelfHostMode);
 
 // -----------------------------------------------------------------------------
 // Common filtered views.
@@ -107,17 +107,6 @@ export const visibleByokProvidersAtom = atom<readonly Provider[]>((get) => {
   if (cloud.length === 0) return providers;
   return [...selfHosted, ...cloud];
 });
-
-/** All providers with `origin.kind === "agent"`. Used by the agent
- *  setup panels (each panel filters further by `origin.agentType`). */
-export const agentProvidersAtom = atom<readonly Provider[]>((get) =>
-  filterByOrigin(get(providersAtom), "agent")
-);
-
-/** The (at most one) provider with `origin.kind === "copilot-plus"`. */
-export const copilotPlusProvidersAtom = atom<readonly Provider[]>((get) =>
-  filterByOrigin(get(providersAtom), "copilot-plus")
-);
 
 // -----------------------------------------------------------------------------
 // Picker-ready join view per backend.

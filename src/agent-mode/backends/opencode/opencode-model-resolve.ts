@@ -1,5 +1,5 @@
 import { isOpencodeZenWireId } from "@/utils/opencode-model-id";
-export { isOpencodeZenWireId, OPENCODE_ZEN_PROVIDER_ID } from "@/utils/opencode-model-id";
+export { isOpencodeZenWireId } from "@/utils/opencode-model-id";
 import type { CopilotSettings } from "@/settings/model";
 import type { ConfiguredModel, Provider } from "@/model-management";
 import {

@@ -31,7 +31,7 @@ The contract lives in `session/types.ts` (`BackendProcess`,
 `BackendDescriptor`, the full session-domain type set) and
 `session/errors.ts` (`MethodUnsupportedError`). `acp/AcpBackendProcess`
 wraps a JSON-RPC subprocess and translates ACP wire ↔ session-domain
-at its public boundary (via `acp/wireTranslate.ts`);
+at its public boundary (via `acp/wire-translate.ts`);
 `sdk/ClaudeSdkBackendProcess` wraps an in-process async generator and
 emits session-domain events natively. Both produce the same
 `SessionEvent` stream and `BackendState`, so `AgentSession` stays
@@ -134,7 +134,7 @@ vault, under the OS temp directory:
 <tmp>/obsidian-copilot/acp-frames/<vault-hash>/acp-frames.ndjson
 ```
 
-Each line is a `FrameRecord` (`src/agent-mode/session/debugSink.ts`):
+Each line is a `FrameRecord` (`src/agent-mode/session/debug-sink.ts`):
 
 ```ts
 { ts, dir: "→" | "←", tag, kind: "request" | "notif" | "result" | "error" | "raw",
@@ -143,8 +143,8 @@ Each line is a `FrameRecord` (`src/agent-mode/session/debugSink.ts`):
 
 `dir` is from the plugin's perspective: `→` = sent to the agent,
 `←` = received from the agent. `tag` is the backend id (e.g. `claude-sdk`,
-`opencode`, `codex`). The ACP runtime (`acp/debugTap`) and the Claude SDK
-adapter (`sdk/sdkDebugTap`) both feed the shared sink, so JSON-RPC and
+`opencode`, `codex`). The ACP runtime (`acp/debug-tap`) and the Claude SDK
+adapter (`sdk/sdk-debug-tap`) both feed the shared sink, so JSON-RPC and
 SDK turns appear in the same file.
 
 Useful queries:
