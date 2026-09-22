@@ -1,8 +1,5 @@
 name: Windows tests
 
-# Every PR gets native coverage, including drafts and changes outside src/.
-# Releases call the same jobs pinned to their exact merge commit.
-# https://github.com/Brevilabs/obsidian-copilot-private/issues/479
 on:
   push:
     branches: [master]
@@ -45,9 +42,6 @@ jobs:
         run: npm test -- --runInBand src/agentMode/skills/builtin/openArtifactsPublishWrappers.test.ts
       - name: Verify sanitization without regexp optimization
         run: node --no-regexp-optimization node_modules/jest/bin/jest.js --runInBand --runTestsByPath src/openArtifacts/openArtifactsDocument.test.ts src/utils/redactLog.test.ts
-
-  # Native coverage is required to diagnose Windows-only fixture failures.
-  # https://github.com/logancyang/obsidian-copilot/issues/2967
   test-windows:
     name: test-windows (shard ${{ matrix.shard }}/4)
     runs-on: windows-latest
@@ -79,8 +73,6 @@ jobs:
             ${{ runner.os }}-jest-${{ matrix.shard }}-${{ hashFiles('package-lock.json', 'jest.config.js', 'jest.setup.js', 'tsconfig.json') }}-
       - if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: npm ci
-      # The PowerShell wrapper suite runs in publish-windows. Running it again
-      # in the full-suite process intermittently exceeds its subprocess timeout.
       - name: Run remaining native Windows unit suite
         shell: pwsh
         run: |

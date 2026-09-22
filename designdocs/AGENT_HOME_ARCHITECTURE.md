@@ -332,7 +332,7 @@ must never evaluate `node:fs` on mobile, so each reaches the node-touching modul
 never reach — the materializer, the opencode descriptor — import the same modules
 statically, which is fine; only the mobile-reachable readers need the dynamic
 boundary.) On mobile the readers degrade to an empty state (there is no Agent Mode
-there anyway). A static-import smoke check (`scripts/mobile-load-smoke.cjs`) guards
+there anyway). A static-import smoke check (`scripts/build/mobile-load-smoke.cjs`) guards
 this boundary over the cache consumers.
 
 ### Cleanup

@@ -5,15 +5,17 @@ import path from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
-const PREPARE_SCRIPT = path.resolve(process.cwd(), "scripts/prepare-gallery-css.mjs");
+const PREPARE_SCRIPT = path.resolve(process.cwd(), "scripts/gallery/prepare-gallery-css.mjs");
 
 describe("gallery-css", () => {
   describe("gallery chrome source", () => {
     it("defines exact development-only selectors for widths and single-side dividers", async () => {
-      const [galleryCss, productionCss] = (await Promise.all([
-        readFile(path.resolve(process.cwd(), "dev/gallery/gallery.css"), "utf8"),
-        readFile(path.resolve(process.cwd(), "src/styles/tailwind.css"), "utf8"),
-      ])).map((css) => css.replace(/\r\n/g, "\n"));
+      const [galleryCss, productionCss] = (
+        await Promise.all([
+          readFile(path.resolve(process.cwd(), "dev/gallery/gallery.css"), "utf8"),
+          readFile(path.resolve(process.cwd(), "src/styles/tailwind.css"), "utf8"),
+        ])
+      ).map((css) => css.replace(/\r\n/g, "\n"));
 
       for (const width of [300, 340, 400, 600]) {
         expect(galleryCss).toContain(

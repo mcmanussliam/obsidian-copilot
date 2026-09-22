@@ -112,7 +112,7 @@ then reloads the plugin (same Obsidian CLI reload as `test:vault`) so the reset
 takes effect immediately — the reload matters because a running plugin holds
 settings in memory and would otherwise overwrite the file on its next save.
 
-With no argument it uses `scripts/test-fixtures/data.clean-onboarding.json`: no
+With no argument it uses `scripts/vault/test-fixtures/data.clean-onboarding.json`: no
 coding agent and no BYOK model configured (empty `providers` / `configuredModels`
 / `backends`), for testing the agent onboarding flow from a clean slate. The
 fixture omits `_keychainOnly`, so the plugin loads in disk mode and ignores any
@@ -121,7 +121,7 @@ The source file is validated as JSON before the target is touched.
 
 ### `data.legacy-byok.json` — one-time BYOK migration
 
-`npm run test:reset-data -- scripts/test-fixtures/data.legacy-byok.json` loads a
+`npm run test:reset-data -- scripts/vault/test-fixtures/data.legacy-byok.json` loads a
 pre-versioned legacy install (no `settingsVersion`; legacy `activeModels` +
 top-level provider keys; empty new slices apart from one pre-seeded BYOK
 Anthropic provider that proves dedup). On the next plugin load,

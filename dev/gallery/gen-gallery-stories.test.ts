@@ -5,7 +5,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
-const GENERATOR_PATH = path.resolve(process.cwd(), "scripts/gen-gallery-stories.mjs");
+const GENERATOR_PATH = path.resolve(process.cwd(), "scripts/gallery/gen-gallery-stories.mjs");
 
 async function addFile(projectRoot: string, filePath: string): Promise<void> {
   const absolutePath = path.join(projectRoot, filePath);

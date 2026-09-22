@@ -502,10 +502,6 @@ export default [
       "*.{js,mjs,cjs}",
       "scripts/**",
       "dev/gallery/esbuild.config.mjs",
-      "esbuild.config.mjs",
-      "version-bump.mjs",
-      "wasmPlugin.mjs",
-      "nodeModuleShim.mjs",
       "jest.config.js",
       "tailwind.config.js",
     ],
@@ -529,9 +525,9 @@ export default [
   {
     files: [
       "**/*.cjs",
-      "scripts/patchRendererUnsafeUnref.js",
-      "scripts/bundleSizeGuard.js",
-      "scripts/bundleSizeGuard.test.js",
+      "scripts/build/patchRendererUnsafeUnref.js",
+      "scripts/build/bundleSizeGuard.js",
+      "scripts/build/bundleSizeGuard.test.js",
     ],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
@@ -737,7 +733,7 @@ export default [
   // eslint-plugin-obsidianmd applies no-plugin-as-component to differs by
   // version, and a type-aware rule reaching an untyped target such as
   // manifest.json cannot load, which makes ESLint abort the whole run instead
-  // of reporting findings. scripts/review-obsidian-fixtures.mjs guards this.
+  // of reporting findings. scripts/review/review-obsidian-fixtures.mjs guards this.
   {
     ignores: ["**/*.ts", "**/*.tsx"],
     rules: {

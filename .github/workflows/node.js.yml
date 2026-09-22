@@ -1,13 +1,9 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: Node.js CI
 
 on:
   push:
     branches: ["master", "main"]
-  pull_request:
-    # Run on all pull requests regardless of target branch
+  pull_request: # Run on all pull requests regardless of target branch
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
@@ -46,7 +42,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - name: Verify PR size labels
-        run: node --test scripts/pr-size.test.mjs
+        run: node --test scripts/review/pr-size.test.mjs
 
   review:
     name: Obsidian review (22.x)
@@ -75,14 +71,9 @@ jobs:
           node-version: 22.x
           cache: npm
       - run: npm ci
-      # Type-checks the project and bundles the plugin. Otherwise both run only
-      # when a release PR merges, so a break would sit on master until someone
-      # cut a release.
       - run: npm run build
-      # Builds the component gallery's whole story graph, so a story that cannot
-      # bundle fails the PR instead of reaching master unnoticed.
       - run: npm run gallery:build
-      - run: node scripts/mobile-load-smoke.cjs
+      - run: node scripts/build/mobile-load-smoke.cjs
 
   build:
     name: build (22.x)
