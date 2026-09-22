@@ -154,8 +154,7 @@ export default [
   {
     ignores: [
       "node_modules/**",
-      "main.js",
-      "styles.css",
+      "dist/**",
       "dev/gallery/main.js",
       "dev/gallery/styles.css",
       "data.json",

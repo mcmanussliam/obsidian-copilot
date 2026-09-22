@@ -92,9 +92,9 @@ carry the **why** — the things a reader cannot recover by reading the code.
 
 ## CSS & Styling
 
-- **NEVER edit `styles.css` directly** - This is a generated file
+- **NEVER edit `dist/styles.css` directly** - This is a generated file
 - **Source file**: `src/styles/tailwind.css` - Edit this file for custom CSS
-- **Build process**: `npm run build:tailwind` compiles `src/styles/tailwind.css` → `styles.css`
+- **Build process**: `npm run build:tailwind` compiles `src/styles/tailwind.css` → `dist/styles.css`
 - **Tailwind-first React styling**: Keep static styles on the React elements that own them. Do not create a component-specific selector family such as `.feature`, `.feature-copy`, and `.feature-actions` merely to replace Tailwind utilities in `className`. This hides the component's styling in a second file and leaves stale selectors, tests, and stories when the component changes.
 - **Choose styling in this order**:
   1. Reuse or extend an existing shared component when the visual pattern already exists.

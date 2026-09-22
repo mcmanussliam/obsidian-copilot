@@ -56,7 +56,7 @@ Try to be descriptive in your branch names and pull requests. Happy coding!
 
 ### Obsidian community review preflight
 
-`npm run review:obsidian` reproduces the public Obsidian source, CSS, manifest/license, and runtime dependency checks. Errors fail the command; warnings remain visible for conservative follow-up work when an automatic cleanup could change plugin behavior or UI. The command rebuilds and scans the packaged `styles.css`, then runs rejection fixtures to ensure every guarded review family is still detected.
+`npm run review:obsidian` reproduces the public Obsidian source, CSS, manifest/license, and runtime dependency checks. Errors fail the command; warnings remain visible for conservative follow-up work when an automatic cleanup could change plugin behavior or UI. The command rebuilds and scans the packaged `dist/styles.css`, then runs rejection fixtures to ensure every guarded review family is still detected.
 
 ESLint and Stylelint findings include the file, line, rule, and message; the same details appear as annotations in GitHub Actions. Dependency-audit findings remain visible for explicit, compatibility-tested follow-up work; critical advisories block the preflight.
 
@@ -66,7 +66,7 @@ Maintainers should also read the [review-gate maintenance guide](./designdocs/OB
 
 #### Fast Iteration with `npm run test:vault` (macOS)
 
-If you work across multiple worktrees or just want one command to build and load the plugin into a test vault, use `npm run test:vault`. It runs `npm install`, builds, symlinks `main.js` / `manifest.json` / `styles.css` from the worktree into the vault's `.obsidian/plugins/copilot/` folder, and reloads the plugin in Obsidian via its CLI.
+If you work across multiple worktrees or just want one command to build and load the plugin into a test vault, use `npm run test:vault`. It runs `npm install`, builds, symlinks `dist/main.js` / `manifest.json` / `dist/styles.css` from the worktree into the vault's `.obsidian/plugins/copilot/` folder, and reloads the plugin in Obsidian via its CLI.
 
 **One-time setup:**
 

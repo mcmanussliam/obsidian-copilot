@@ -87,14 +87,14 @@ plugin loaded into a real vault. The CLI lives at
 npm run test:vault
 ```
 
-macOS only. Installs deps, builds, and copies `main.js` / `manifest.json` /
-`styles.css` from the current worktree into
+macOS only. Installs deps, builds, and copies `dist/main.js` / `manifest.json` /
+`dist/styles.css` from the current worktree into
 `$COPILOT_TEST_VAULT_PATH/.obsidian/plugins/copilot/`, then reloads the plugin
 via the Obsidian CLI. Requires `$COPILOT_TEST_VAULT_PATH` (user-level env var)
 pointing at a vault that has been opened in Obsidian at least once.
 
 This is the canonical "get my changes running" step — don't hand-roll `npm run
-build && cp main.js …`. If the user has multiple Conductor worktrees, whichever
+build && cp dist/main.js …`. If the user has multiple Conductor worktrees, whichever
 one ran `test:vault` last wins; verify with the preflight in the next section.
 The copied manifest carries a development-only version suffix and visible tag
 with the commit, clean/dirty state, and bundle hash. A later build in the

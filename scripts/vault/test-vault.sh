@@ -82,12 +82,12 @@ mkdir -p "$PLUGIN_DIR"
 
 echo "==> Copying artifacts into $PLUGIN_DIR"
 for f in main.js styles.css; do
-  if [[ ! -f "$WORKTREE_ROOT/$f" ]]; then
-    echo "error: expected build artifact missing: $WORKTREE_ROOT/$f" >&2
+  if [[ ! -f "$WORKTREE_ROOT/dist/$f" ]]; then
+    echo "error: expected build artifact missing: $WORKTREE_ROOT/dist/$f" >&2
     exit 1
   fi
   rm -f "$PLUGIN_DIR/$f"
-  cp -f "$WORKTREE_ROOT/$f" "$PLUGIN_DIR/$f"
+  cp -f "$WORKTREE_ROOT/dist/$f" "$PLUGIN_DIR/$f"
 done
 
 BUILD_TS="$(date +%Y%m%d-%H%M%S)"

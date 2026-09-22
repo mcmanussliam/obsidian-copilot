@@ -146,9 +146,9 @@ jobs:
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: |
-            main.js
+            dist/main.js
             manifest.json
-            styles.css
+            dist/styles.css
 
       - name: Create GitHub Release
         if: steps.check_existing.outputs.exists != 'true'
@@ -166,6 +166,6 @@ jobs:
             --title "$VERSION" \
             --notes-file /tmp/release-notes.md \
             $PRERELEASE_FLAG \
-            main.js \
+            dist/main.js \
             manifest.json \
-            styles.css
+            dist/styles.css

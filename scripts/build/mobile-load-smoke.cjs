@@ -76,7 +76,7 @@ function formatError(error) {
 
   const stackLines = (error.stack ?? "")
     .split("\n")
-    .filter((line) => !line.includes("main.js:1:"))
+    .filter((line) => !line.includes("dist/main.js:1:"))
     .slice(0, 6);
 
   return [`${error.name}: ${error.message}`, ...stackLines.slice(1)].join("\n");
@@ -314,9 +314,9 @@ class SmokeEventTarget {
 }
 
 function runBundleEvaluationSmoke() {
-  const bundlePath = path.join(repoRoot, "main.js");
+  const bundlePath = path.join(repoRoot, "dist/main.js");
   if (!fs.existsSync(bundlePath)) {
-    fail("main.js is missing. Run npm run build before the mobile-load smoke test.");
+    fail("dist/main.js is missing. Run npm run build before the mobile-load smoke test.");
     return;
   }
 
@@ -372,17 +372,17 @@ function runBundleEvaluationSmoke() {
 
   try {
     vm.runInNewContext(source, context, {
-      filename: "main.js",
+      filename: "dist/main.js",
       timeout: 5000,
     });
   } catch (error) {
-    fail(`main.js failed mobile bundle evaluation: ${formatError(error)}`);
+    fail(`dist/main.js failed mobile bundle evaluation: ${formatError(error)}`);
     return;
   }
 
   const pluginExport = module.exports.default ?? module.exports;
   if (typeof pluginExport !== "function") {
-    fail("main.js did not export the plugin class.");
+    fail("dist/main.js did not export the plugin class.");
   }
 }
 

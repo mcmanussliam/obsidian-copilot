@@ -118,7 +118,7 @@ function assertBundleSize(source, maxBytes = MAX_BUNDLE_BYTES) {
   const bytes = Buffer.byteLength(source, "utf8");
   if (bytes >= maxBytes) {
     throw new Error(
-      `[bundle-size-guard] main.js is ${bytes} bytes; it must be strictly below ${maxBytes} bytes`
+      `[bundle-size-guard] dist/main.js is ${bytes} bytes; it must be strictly below ${maxBytes} bytes`
     );
   }
   return bytes;

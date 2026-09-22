@@ -8,7 +8,7 @@ trap 'rm -rf "$TEST_ROOT"' EXIT
 FIXTURE_ROOT="$TEST_ROOT/repo"
 VAULT_ROOT="$TEST_ROOT/vault"
 FAKE_BIN="$TEST_ROOT/bin"
-mkdir -p "$FIXTURE_ROOT/scripts/vault" "$VAULT_ROOT/.obsidian" "$FAKE_BIN"
+mkdir -p "$FIXTURE_ROOT/scripts/vault" "$FIXTURE_ROOT/dist" "$VAULT_ROOT/.obsidian" "$FAKE_BIN"
 cp "$REPO_ROOT/scripts/vault/test-vault.sh" "$FIXTURE_ROOT/scripts/vault/test-vault.sh"
 
 cat >"$FIXTURE_ROOT/manifest.json" <<'EOF'
@@ -19,10 +19,10 @@ cat >"$FIXTURE_ROOT/manifest.json" <<'EOF'
   "description": "Test fixture"
 }
 EOF
-printf 'clean bundle\n' >"$FIXTURE_ROOT/main.js"
-printf 'clean styles\n' >"$FIXTURE_ROOT/styles.css"
+printf 'clean bundle\n' >"$FIXTURE_ROOT/dist/main.js"
+printf 'clean styles\n' >"$FIXTURE_ROOT/dist/styles.css"
 printf 'tracked\n' >"$FIXTURE_ROOT/source.txt"
-printf 'main.js\nstyles.css\n' >"$FIXTURE_ROOT/.gitignore"
+printf 'dist/\n' >"$FIXTURE_ROOT/.gitignore"
 
 DEPLOY_CALL_LOG="$TEST_ROOT/deploy-calls.log"
 cat >"$FAKE_BIN/npm" <<'EOF'
@@ -93,8 +93,8 @@ assert_manifest() {
 
 COMMIT="$(git -C "$FIXTURE_ROOT" rev-parse --short=8 HEAD)"
 mkdir -p "$VAULT_ROOT/.obsidian/plugins/copilot"
-ln -s "$FIXTURE_ROOT/main.js" "$VAULT_ROOT/.obsidian/plugins/copilot/main.js"
-ln -s "$FIXTURE_ROOT/styles.css" "$VAULT_ROOT/.obsidian/plugins/copilot/styles.css"
+ln -s "$FIXTURE_ROOT/dist/main.js" "$VAULT_ROOT/.obsidian/plugins/copilot/main.js"
+ln -s "$FIXTURE_ROOT/dist/styles.css" "$VAULT_ROOT/.obsidian/plugins/copilot/styles.css"
 run_deploy
 assert_manifest clean
 
@@ -105,7 +105,7 @@ for artifact in main.js styles.css; do
   fi
 done
 DEPLOYED_MAIN="$VAULT_ROOT/.obsidian/plugins/copilot/main.js"
-printf 'changed after deployment\n' >"$FIXTURE_ROOT/main.js"
+printf 'changed after deployment\n' >"$FIXTURE_ROOT/dist/main.js"
 if [[ "$(cat "$DEPLOYED_MAIN")" != "clean bundle" ]]; then
   echo "deployed main.js changed when the worktree artifact changed" >&2
   exit 1
@@ -123,7 +123,7 @@ if [[ -z "$STORIES_LINE" || -z "$BUILD_LINE" || "$BUILD_LINE" -le "$STORIES_LINE
 fi
 
 printf 'dirty\n' >>"$FIXTURE_ROOT/source.txt"
-printf 'dirty bundle\n' >"$FIXTURE_ROOT/main.js"
+printf 'dirty bundle\n' >"$FIXTURE_ROOT/dist/main.js"
 run_deploy
 assert_manifest dirty
 
