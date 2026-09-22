@@ -1,6 +1,6 @@
 import { AI_SENDER, USER_SENDER } from "@/constants";
 import { ChatMessage } from "@/types/message";
-import { updateChatMemory } from "./chatUtils";
+import { updateChatMemory } from "@/chatUtils";
 
 jest.mock("@/logger");
 

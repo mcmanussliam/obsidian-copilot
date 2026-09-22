@@ -3,7 +3,6 @@
 // PROTOCOL_VERSION, ndJsonStream) without pulling the real ESM package
 // through ts-jest. Tests that need behavior beyond this mock should stub
 // their own.
- 
 
 class RequestError extends Error {
   constructor(code, message, data) {

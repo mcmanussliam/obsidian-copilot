@@ -19,8 +19,8 @@ import {
   stripFrontmatter,
   truncateToByteLimit,
   withTimeout,
-} from "./utils";
-import { TimeoutError } from "./error";
+} from "@/utils";
+import { TimeoutError } from "@/error";
 
 // Mock Obsidian's TFile class
 jest.mock("obsidian", () => {

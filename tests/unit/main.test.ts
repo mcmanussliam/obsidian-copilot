@@ -1,6 +1,6 @@
 // The plugin module graph reaches Obsidian base classes the shared mock does
 // not model and provider SDKs Jest cannot resolve under jsdom; stubbing them
-// here (rather than in `__mocks__/obsidian.js`) keeps the blast radius to this
+// here (rather than in `tests/mocks/obsidian.js`) keeps the blast radius to this
 // suite while letting the real `CopilotPlugin` class load.
 jest.mock("obsidian", () => {
   const actual = jest.requireActual<Record<string, unknown>>("obsidian");

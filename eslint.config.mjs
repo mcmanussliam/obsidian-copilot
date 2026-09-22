@@ -456,7 +456,7 @@ export default [
 
   // Test files need Jest globals
   {
-    files: ["**/*.test.{js,jsx,ts,tsx}", "jest.setup.js", "__mocks__/**"],
+    files: ["**/*.test.{js,jsx,ts,tsx}", "jest.setup.js", "tests/mocks/**"],
     languageOptions: {
       globals: {
         ...globals.jest,
@@ -471,7 +471,7 @@ export default [
       "eslint-comments/no-restricted-disable": "off",
       "eslint-comments/require-description": "off",
       // Tests intentionally consume the global `app` mock (window.app, set up in
-      // __mocks__/obsidian.js) to feed it into the parameterized production
+      // tests/mocks/obsidian.js) to feed it into the parameterized production
       // functions under test. The footgun the ban guards against (popout windows,
       // hidden dependencies) is a production concern, so don't enforce it here.
       "no-restricted-globals": "off",
@@ -621,7 +621,7 @@ export default [
   // Re-disable boundaries/dependencies for tests — the block above otherwise
   // re-enables the rule for test files via the broader `src/**` pattern.
   {
-    files: ["**/*.test.{js,jsx,ts,tsx}", "jest.setup.js", "__mocks__/**"],
+    files: ["**/*.test.{js,jsx,ts,tsx}", "jest.setup.js", "tests/mocks/**"],
     rules: {
       "boundaries/dependencies": "off",
     },

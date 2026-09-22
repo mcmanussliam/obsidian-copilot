@@ -2,7 +2,6 @@
 // import modules that reference its runtime values (`query`,
 // `createSdkMcpServer`, `tool`) without pulling the real ESM package
 // through ts-jest. Tests that exercise SDK behavior should stub these.
- 
 
 function query() {
   // Minimal Query stub: empty async generator + control methods. Tests

@@ -1,4 +1,4 @@
-import { cleanMessageForCopy } from "./utils";
+import { cleanMessageForCopy } from "@/utils";
 
 describe("cleanMessageForCopy", () => {
   it("should remove Think blocks", () => {

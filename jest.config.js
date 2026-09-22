@@ -7,10 +7,10 @@ module.exports = {
     "^.+\\.md$": "<rootDir>/jest.textTransform.js",
   },
   moduleNameMapper: {
-    "\\.svg$": "<rootDir>/__mocks__/svg.js",
+    "\\.svg$": "<rootDir>/tests/mocks/svg.js",
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@tests/(.*)$": "<rootDir>/tests/$1",
-    "^obsidian$": "<rootDir>/__mocks__/obsidian.js",
+    "^obsidian$": "<rootDir>/tests/mocks/obsidian.js",
     // The yaml package's "exports" field defaults to a browser ESM entry under
     // jsdom; Jest can't parse ESM without extra config, so point at the CJS
     // build it ships under dist/.
@@ -19,10 +19,10 @@ module.exports = {
     // wildcard that Jest's resolver does not expand, so @langchain/anthropic's
     // require of one fails to resolve. Point at the CJS build directly.
     "^@anthropic-ai/sdk/lib/(.*)$": "<rootDir>/node_modules/@anthropic-ai/sdk/lib/$1.js",
-    "^@agentclientprotocol/sdk$": "<rootDir>/__mocks__/@agentclientprotocol/sdk.js",
-    "^@anthropic-ai/claude-agent-sdk$": "<rootDir>/__mocks__/@anthropic-ai/claude-agent-sdk.js",
+    "^@agentclientprotocol/sdk$": "<rootDir>/tests/mocks/@agentclientprotocol/sdk.js",
+    "^@anthropic-ai/claude-agent-sdk$": "<rootDir>/tests/mocks/@anthropic-ai/claude-agent-sdk.js",
     // react-resizable-panels is ESM-only with no CJS build to point at; stub it.
-    "^react-resizable-panels$": "<rootDir>/__mocks__/react-resizable-panels.js",
+    "^react-resizable-panels$": "<rootDir>/tests/mocks/react-resizable-panels.js",
   },
   testRegex: ".*\\.test\\.(jsx?|tsx?)$",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node", "md"],

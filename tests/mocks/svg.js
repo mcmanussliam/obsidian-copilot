@@ -1,4 +1,3 @@
- 
 import React from "react";
 
 const SvgStub = (props) => React.createElement("svg", props);
