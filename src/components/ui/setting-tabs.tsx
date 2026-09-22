@@ -47,8 +47,8 @@ export const TabItem: React.FC<TabItemProps> = ({
       onClick={onClick}
       // Reason: a `role="tab"` div is not focusable or keyboard-operable on its
       // own. We add tabIndex + Enter/Space activation for a11y, but deliberately
-      // skip arrow-key roving — mirrors the locked decision in AgentHomeShelf.tsx
-      // (don't reimplement roving tablist navigation here).
+      // skip arrow-key roving — mirrors the locked decision in other tab lists
+      // in this project (don't reimplement roving tablist navigation here).
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();

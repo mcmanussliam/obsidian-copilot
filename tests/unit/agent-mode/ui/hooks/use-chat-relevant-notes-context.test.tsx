@@ -1,6 +1,4 @@
-import { AgentHomeShelf } from "@/agent-mode/ui/agent-home-shelf";
 import React from "react";
-import { RelevantNotesShelfPanel } from "@/agent-mode/ui/relevant-notes-shelf-panel";
 import { useChatRelevantNotesContext } from "@/agent-mode/ui/hooks/use-chat-relevant-notes-context";
 import type { AgentInputDraftControls } from "@/agent-mode/ui/hooks/use-agent-input-drafts";
 import type { AgentChatMessage } from "@/agent-mode/session/types";
@@ -398,19 +396,11 @@ describe("useChatRelevantNotesContext", () => {
       void act(() => listener({ view: Object.create(MarkdownView.prototype) }));
       expect(getChatRelevantNotesStore(app).getSnapshot()).toBeNull();
     });
-    it("keeps the previously selected chat when opening the Relevant Notes shelf tab in another chat (https://github.com/Brevilabs/obsidian-copilot-private/issues/383)", () => {
+    it("keeps the previously selected chat when focusing a Relevant Notes guard element in another chat (https://github.com/Brevilabs/obsidian-copilot-private/issues/383)", () => {
       const { getByRole } = render(
-        <AgentHomeShelf
-          sections={[
-            { id: "chats", icon: <span />, title: "Chats", renderBody: () => <span /> },
-            {
-              id: "relevant-notes",
-              icon: <span />,
-              title: "Relevant Notes",
-              renderBody: () => <span />,
-            },
-          ]}
-        />,
+        <div role="tab" data-section-id="relevant-notes" tabIndex={0}>
+          Relevant Notes
+        </div>,
         { container: root }
       );
       renderHook(() => useChatRelevantNotesContext(app, root, "one", draft, [], undefined));
@@ -497,9 +487,9 @@ describe("useChatRelevantNotesContext", () => {
     });
     it("keeps the editor as the source when clicking the Relevant Notes popout control (https://github.com/Brevilabs/obsidian-copilot-private/issues/383)", () => {
       const { getByRole } = render(
-        <RelevantNotesShelfPanel onPopOut={jest.fn()}>
-          <span>Notes</span>
-        </RelevantNotesShelfPanel>,
+        <div data-relevant-notes>
+          <button type="button">Open in separate pane</button>
+        </div>,
         { container: root }
       );
       const shelf = getByRole("button", { name: "Open in separate pane" });

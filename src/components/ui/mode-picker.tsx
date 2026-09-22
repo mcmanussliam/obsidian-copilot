@@ -65,7 +65,7 @@ export function ModePicker({ override, className }: ModePickerProps) {
             value === "plan" &&
               "tw-text-blue/70 hover:tw-text-blue/100 focus-visible:tw-text-blue/100",
             value === "auto" &&
-              "tw-text-red/70 hover:tw-text-red/100 focus-visible:tw-text-red/100",
+              "tw-text-orange/70 hover:tw-text-orange/100 focus-visible:tw-text-orange/100",
             className
           )}
           title="Operational mode"
