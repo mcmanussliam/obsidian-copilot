@@ -15,7 +15,9 @@ need unit tests; use end-to-end tests when unit tests can't answer the question.
 - Jest with TypeScript support. `npm run test` runs the unit suite; run a
   single test with `npm test -- -t "test name"`.
 - Mock the Obsidian API for plugin testing.
-- Test files live adjacent to the implementation (`.test.ts`).
+- Unit tests live in `tests/unit/`, mirroring `src/` (`src/utils/foo.ts` →
+  `tests/unit/utils/foo.test.ts`). Import the subject with the `@/` alias, never
+  a relative path, so tests survive moves.
 - Use `@testing-library/react` for component testing.
 - For how to structure code so it's unit-testable — dependency injection, pure
   leaf modules, the litmus test — see [`STYLE_GUIDE.md`](./STYLE_GUIDE.md).

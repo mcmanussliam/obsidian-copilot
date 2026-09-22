@@ -1,7 +1,7 @@
 module.exports = {
   preset: "ts-jest",
   testEnvironment: "jsdom",
-  roots: ["<rootDir>/src", "<rootDir>/dev", "<rootDir>/scripts"],
+  roots: ["<rootDir>/tests", "<rootDir>/dev", "<rootDir>/scripts"],
   transform: {
     "^.+\\.(js|jsx|ts|tsx)$": "ts-jest",
     "^.+\\.md$": "<rootDir>/jest.textTransform.js",
@@ -9,6 +9,7 @@ module.exports = {
   moduleNameMapper: {
     "\\.svg$": "<rootDir>/__mocks__/svg.js",
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^@tests/(.*)$": "<rootDir>/tests/$1",
     "^obsidian$": "<rootDir>/__mocks__/obsidian.js",
     // The yaml package's "exports" field defaults to a browser ESM entry under
     // jsdom; Jest can't parse ESM without extra config, so point at the CJS

@@ -7,7 +7,7 @@
     "scripts/debug/printPromptDebug.js",
     "scripts/debug/printPromptDebugEntry.ts"
   ],
-  "project": ["src/**/*.{ts,tsx,js,jsx}", "dev/gallery/**/*.{ts,tsx}", "scripts/**/*.{ts,js,mjs}"],
+  "project": ["src/**/*.{ts,tsx,js,jsx}", "tests/**/*.{ts,tsx}", "dev/gallery/**/*.{ts,tsx}", "scripts/**/*.{ts,js,mjs}"],
   "ignore": ["src/styles/tailwind.css"],
   "ignoreDependencies": ["buffer"]
 }

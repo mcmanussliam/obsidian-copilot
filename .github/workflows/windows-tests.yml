@@ -39,9 +39,9 @@ jobs:
       - if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: npm ci
       - name: Test native PowerShell publishing wrapper
-        run: npm test -- --runInBand src/agentMode/skills/builtin/openArtifactsPublishWrappers.test.ts
+        run: npm test -- --runInBand tests/unit/agentMode/skills/builtin/openArtifactsPublishWrappers.test.ts
       - name: Verify sanitization without regexp optimization
-        run: node --no-regexp-optimization node_modules/jest/bin/jest.js --runInBand --runTestsByPath src/openArtifacts/openArtifactsDocument.test.ts src/utils/redactLog.test.ts
+        run: node --no-regexp-optimization node_modules/jest/bin/jest.js --runInBand --runTestsByPath tests/unit/openArtifacts/openArtifactsDocument.test.ts tests/unit/utils/redactLog.test.ts
   test-windows:
     name: test-windows (shard ${{ matrix.shard }}/4)
     runs-on: windows-latest
@@ -68,7 +68,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .jest-cache
-          key: ${{ runner.os }}-jest-${{ matrix.shard }}-${{ hashFiles('package-lock.json', 'jest.config.js', 'jest.setup.js', 'tsconfig.json') }}-${{ hashFiles('src/**', 'dev/**', 'scripts/**') }}
+          key: ${{ runner.os }}-jest-${{ matrix.shard }}-${{ hashFiles('package-lock.json', 'jest.config.js', 'jest.setup.js', 'tsconfig.json') }}-${{ hashFiles('src/**', 'tests/**', 'dev/**', 'scripts/**') }}
           restore-keys: |
             ${{ runner.os }}-jest-${{ matrix.shard }}-${{ hashFiles('package-lock.json', 'jest.config.js', 'jest.setup.js', 'tsconfig.json') }}-
       - if: steps.node-modules-cache.outputs.cache-hit != 'true'

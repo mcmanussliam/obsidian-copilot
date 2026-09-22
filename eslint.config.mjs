@@ -310,7 +310,7 @@ export default [
   // Tests may import Node directly because they execute under Jest, not Obsidian.
   {
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/**/*.test.{ts,tsx}", "src/**/__mocks__/**"],
+    ignores: ["src/**/__mocks__/**"],
     plugins: { copilot: copilotLintPlugin },
     rules: {
       "copilot/no-direct-node-imports": "error",
@@ -377,7 +377,7 @@ export default [
   // Test output is intentionally written to the console. Keep the production
   // import restrictions without applying the logging boundary to test files.
   {
-    files: ["src/**/*.test.{js,jsx,ts,tsx}"],
+    files: ["tests/**/*.test.{js,jsx,ts,tsx}"],
     rules: {
       "no-restricted-syntax": ["error", ...restrictedSourceImports],
     },
@@ -385,9 +385,8 @@ export default [
 
   {
     files: ["src/components/ui/**/*.{ts,tsx}"],
-    // Tests may reach further; stories deliberately may not — a story that needs
-    // plugin state to build a fixture is reporting a coupled component.
-    ignores: ["src/components/ui/**/*.test.{ts,tsx}"],
+    // Stories deliberately may not reach further — a story that needs plugin
+    // state to build a fixture is reporting a coupled component.
     rules: {
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-restricted-imports": [
@@ -719,7 +718,7 @@ export default [
   // agent-mode subtree only; production code stays enforced. Placed after the
   // general TS block so it actually overrides.
   {
-    files: ["src/agentMode/**/*.test.{ts,tsx}"],
+    files: ["tests/unit/agentMode/**/*.test.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
