@@ -155,8 +155,8 @@ export default [
     ignores: [
       "node_modules/**",
       "dist/**",
-      "dev/gallery/main.js",
-      "dev/gallery/styles.css",
+      "gallery/dist/main.js",
+      "gallery/dist/styles.css",
       "data.json",
       "designdocs/**",
       "docs/**",
@@ -366,8 +366,8 @@ export default [
   },
 
   {
-    files: ["dev/gallery/**/*.{ts,tsx}"],
-    ignores: ["dev/gallery/**/*.test.{ts,tsx}"],
+    files: ["gallery/**/*.{ts,tsx}"],
+    ignores: ["gallery/**/*.test.{ts,tsx}"],
     rules: {
       "no-restricted-syntax": ["error", restrictedBrowserStorage],
     },
@@ -420,17 +420,21 @@ export default [
   },
 
   {
-    files: ["dev/gallery/**/*.{ts,tsx}", "src/**/*.stories.{ts,tsx}"],
+    files: ["gallery/**/*.{ts,tsx}", "src/**/*.stories.{ts,tsx}"],
     // Test fixtures intentionally import production stories and contexts but are
     // erased from the gallery bundle, so only runtime gallery code needs this fence.
-    ignores: ["dev/gallery/**/*.test.{ts,tsx}"],
+    ignores: ["gallery/**/*.test.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-restricted-imports": [
         "error",
         {
           patterns: [
             {
-              regex: "^\\.\\./",
+              // The generated story index is the one parent-relative import
+              // the gallery runtime may use: it is machine-generated build
+              // output outside src/, so no @/ path can address it. This
+              // exemption never extends to hand-written production modules.
+              regex: "^\\.\\.(?!/dist/stories\\.generated$)/",
               allowTypeImports: true,
               message:
                 "Gallery runtime and stories may not bypass the production import fence " +
@@ -499,7 +503,7 @@ export default [
     files: [
       "*.{js,mjs,cjs}",
       "scripts/**",
-      "dev/gallery/esbuild.config.mjs",
+      "gallery/scripts/**",
       "jest.config.js",
       "tailwind.config.js",
     ],

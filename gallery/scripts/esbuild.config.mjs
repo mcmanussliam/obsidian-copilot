@@ -8,8 +8,8 @@ const prod = process.argv[2] === "production";
 
 const context = await esbuild.context({
   ...baseEsbuildOptions(prod),
-  entryPoints: ["dev/gallery/main.ts"],
-  outfile: "dev/gallery/main.js",
+  entryPoints: ["gallery/src/main.ts"],
+  outfile: "gallery/dist/main.js",
   // `module` gets a shim rather than a slot in `external` because the renderer
   // has no ESM `createRequire`; `svgrPlugin` loads the backend logo SVGs.
   plugins: [nodeModuleShim, svgrPlugin],

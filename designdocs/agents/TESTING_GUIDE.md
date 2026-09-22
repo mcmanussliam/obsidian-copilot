@@ -445,7 +445,7 @@ Use the component gallery whenever a feature adds or changes a user-visible Reac
 
 ### Authoring stories
 
-1. Add or update a `*.stories.tsx` file beside the component. The generated gallery index discovers `src/**/*.stories.tsx`; do not edit `dev/gallery/stories.generated.ts`.
+1. Add or update a `*.stories.tsx` file beside the component. The generated gallery index discovers `src/**/*.stories.tsx`; do not edit `gallery/dist/stories.generated.ts`.
 2. Import `Meta` and `StoryObj` from `@/lib/story`, declare component metadata with `satisfies Meta<Props>`, and type every named story as `StoryObj<Props>`.
 3. Cover the load-bearing states a user can actually see: default, empty, loading, success, error, disabled, overflow-prone content, or other states introduced by the feature. Use realistic copy and fixture props rather than production stores or runtime singletons.
 4. Prefer `args` for ordinary prop states and `render` for compositions. Hook-backed render functions are supported. Keep fixtures deterministic and actions inert unless interaction is the behavior under test.
@@ -482,7 +482,7 @@ Deploy to the non-production test vault configured by `COPILOT_TEST_VAULT_PATH` 
 
 The gallery's stylesheet is built by concatenating `src/styles/tailwind.css` into its own source, so it carries a near-complete copy of the production stylesheet — and Obsidian injects every enabled plugin's `styles.css` document-wide. Both copies land in the same cascade at equal specificity, so a gallery copy built from an older `src/styles/tailwind.css` outranks the deployed production rules and the plugin's own views render pre-change behavior.
 
-`npm run test:vault` keeps the two in step: whenever the vault has a gallery plugin installed, it rebuilds the gallery from the worktree being deployed and relinks it there, then reloads it. `gallery:vault` symlinks its whole source directory, so this also repairs a link left dangling by a deleted worktree; if the vault has no gallery plugin, the step is skipped.
+`npm run test:vault` keeps the two in step: whenever the vault has a gallery plugin installed, it rebuilds the gallery from the worktree being deployed, copies it into the vault, then reloads it. `gallery:vault` copies the built artifacts (`manifest.json`, `dist/main.js`, `dist/styles.css`) into regular files, replacing legacy symlinks without changing their targets; if the vault has no gallery plugin, the step is skipped. Keeping artifacts inside the vault avoids requiring Obsidian to read a separate checkout, which macOS permissions can block with `EPERM`. Run `npm run gallery:vault` again after changes: rebuilding or watching the checkout alone does not update the deployed copies.
 
 If a CSS change appears to have no effect, check for the same selector twice in the inspector before suspecting the change itself.
 

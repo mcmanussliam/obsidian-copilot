@@ -15,14 +15,14 @@ function readManifest(relativePath: string): PluginManifest {
 describe("gallery-manifest", () => {
   describe("dev plugin manifest", () => {
     it("tracks the production minimum app version so the gallery loads wherever the plugin does", () => {
-      const gallery = readManifest("dev/gallery/manifest.json");
+      const gallery = readManifest("gallery/manifest.json");
       const production = readManifest("manifest.json");
 
       expect(gallery.minAppVersion).toBe(production.minAppVersion);
     });
 
     it("uses a distinct plugin id so the dev gallery never collides with the production plugin", () => {
-      const gallery = readManifest("dev/gallery/manifest.json");
+      const gallery = readManifest("gallery/manifest.json");
       const production = readManifest("manifest.json");
 
       expect(gallery.id).not.toBe(production.id);

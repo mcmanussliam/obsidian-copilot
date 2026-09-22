@@ -8,10 +8,10 @@ import {
   getManifestFilename,
   lintRuntimeDependencies,
   validateSelectedManifest,
-} from "./review-obsidian-package";
+} from "./review-obsidian-package.mjs";
 
 const repositoryRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
-const reviewSourceRoots = ["src", "dev/gallery"];
+const reviewSourceRoots = ["src", "gallery"];
 const reviewSourceExtensions = new Set([".cjs", ".js", ".jsx", ".mjs", ".ts", ".tsx"]);
 
 // Negative examples must not be real source files because the authenticated
@@ -29,7 +29,7 @@ void loadOs;
 console.log(fetch("https://example.com"));
 `;
 const validNodeBoundaryFixture = `import { Buffer } from "buffer/";
-import { requireNodeModule } from "@/utils/desktopRuntime";
+import { requireNodeModule } from "@/utils/desktop-runtime";
 
 type Stats = import("node:fs").Stats;
 

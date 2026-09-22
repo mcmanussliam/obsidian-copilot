@@ -14,7 +14,7 @@ import {
   type GalleryViewState,
   resolveGalleryViewState,
   type StoryDefinition,
-} from "./gallery";
+} from "../src/gallery";
 import type { GalleryParameters, Host, Layout } from "@/lib/story";
 
 jest.mock("@/components/modals/react-modal", () => {

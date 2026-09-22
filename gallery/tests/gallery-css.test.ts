@@ -5,14 +5,14 @@ import path from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
-const PREPARE_SCRIPT = path.resolve(process.cwd(), "scripts/gallery/prepare-gallery-css.mjs");
+const PREPARE_SCRIPT = path.resolve(process.cwd(), "gallery/scripts/prepare-gallery-css.mjs");
 
 describe("gallery-css", () => {
   describe("gallery chrome source", () => {
     it("defines exact development-only selectors for widths and single-side dividers", async () => {
       const [galleryCss, productionCss] = (
         await Promise.all([
-          readFile(path.resolve(process.cwd(), "dev/gallery/gallery.css"), "utf8"),
+          readFile(path.resolve(process.cwd(), "gallery/src/gallery.css"), "utf8"),
           readFile(path.resolve(process.cwd(), "src/styles/tailwind.css"), "utf8"),
         ])
       ).map((css) => css.replace(/\r\n/g, "\n"));
@@ -46,11 +46,12 @@ describe("gallery-css", () => {
       projectRoot = await mkdtemp(path.join(tmpdir(), "gallery css "));
       await Promise.all([
         mkdir(path.join(projectRoot, "src/styles"), { recursive: true }),
-        mkdir(path.join(projectRoot, "dev/gallery"), { recursive: true }),
+        mkdir(path.join(projectRoot, "gallery/src"), { recursive: true }),
+        mkdir(path.join(projectRoot, "gallery/dist"), { recursive: true }),
       ]);
       await Promise.all([
         writeFile(path.join(projectRoot, "src/styles/tailwind.css"), "production css\n"),
-        writeFile(path.join(projectRoot, "dev/gallery/gallery.css"), "gallery css\n"),
+        writeFile(path.join(projectRoot, "gallery/src/gallery.css"), "gallery css\n"),
       ]);
     });
 
@@ -62,7 +63,7 @@ describe("gallery-css", () => {
       await execFileAsync(process.execPath, [PREPARE_SCRIPT], { cwd: projectRoot });
 
       await expect(
-        readFile(path.join(projectRoot, "dev/gallery/styles.source.css"), "utf8")
+        readFile(path.join(projectRoot, "gallery/dist/styles.source.css"), "utf8")
       ).resolves.toBe("production css\n\ngallery css\n");
     });
   });
