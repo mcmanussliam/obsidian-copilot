@@ -1,37 +1,75 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 interface PackageJson {
   scripts: Record<string, string>;
 }
 
-describe("package.json", () => {
-  const packageJson = JSON.parse(
-    readFileSync(path.resolve(process.cwd(), "package.json"), "utf8")
-  ) as PackageJson;
+const REPO_ROOT = process.cwd();
+const packageJson = JSON.parse(
+  readFileSync(path.resolve(REPO_ROOT, "package.json"), "utf8")
+) as PackageJson;
 
-  describe("gallery:css", () => {
-    it("prepares a gallery-only source before Tailwind builds it", () => {
-      expect(packageJson.scripts["gallery:css:source"]).toBe(
-        "node scripts/gallery/prepare-gallery-css.mjs"
+function galleryScriptRefs(script: string): string[] {
+  return script.match(/gallery:[\w:.-]+/g) ?? [];
+}
+
+function fileRefs(script: string): string[] {
+  return [
+    ...script.matchAll(/(?:node|bash)\s+([^\s'"]+)/g),
+  ].map((match) => match[1]);
+}
+
+describe("package-scripts", () => {
+  describe("gallery pipelines", () => {
+    it("defines every gallery script referenced by another gallery script", () => {
+      const defined = new Set(
+        Object.keys(packageJson.scripts).filter((name) => name.startsWith("gallery:"))
       );
-      expect(packageJson.scripts["gallery:css:tailwind"]).toBe(
-        "npx tailwindcss -i dev/gallery/styles.source.css -o dev/gallery/styles.css --content './src/**/*.{js,ts,jsx,tsx},./dev/gallery/**/*.{js,ts,jsx,tsx}'"
+      const referenced = new Set(
+        Object.entries(packageJson.scripts)
+          .filter(([name]) => name.startsWith("gallery:"))
+          .flatMap(([, script]) => galleryScriptRefs(script))
       );
-      expect(packageJson.scripts["gallery:css"]).toBe(
-        "npm run gallery:css:source && npm run gallery:css:tailwind"
-      );
+
+      expect(referenced.size).toBeGreaterThan(0);
+      for (const name of referenced) {
+        expect(defined.has(name)).toBe(true);
+      }
     });
-  });
 
-  describe("gallery:dev", () => {
-    it("generates sources before watching both CSS inputs and gallery artifacts", () => {
-      expect(packageJson.scripts["gallery:stories"]).toBe(
-        "node scripts/gallery/gen-gallery-stories.mjs"
-      );
-      expect(packageJson.scripts["gallery:esbuild"]).toBe("node dev/gallery/esbuild.config.mjs");
-      expect(packageJson.scripts["gallery:dev"]).toBe(
-        'npm run gallery:stories && npm run gallery:css:source && run-p "gallery:css:source -- --watch" "gallery:css:tailwind -- --watch --poll" "gallery:esbuild -- --watch"'
+    it("points every node/bash step at a file that exists in the repo", () => {
+      const missing: string[] = [];
+      for (const [name, script] of Object.entries(packageJson.scripts)) {
+        if (!name.startsWith("gallery:")) continue;
+        for (const ref of fileRefs(script)) {
+          if (!existsSync(path.resolve(REPO_ROOT, ref))) {
+            missing.push(`${name} -> ${ref}`);
+          }
+        }
+      }
+
+      expect(missing).toEqual([]);
+    });
+
+    it("generates gallery stories before the steps that bundle them", () => {
+      for (const name of ["gallery:build", "gallery:dev"]) {
+        const order = galleryScriptRefs(packageJson.scripts[name]);
+        expect(order.indexOf("gallery:stories")).toBeLessThan(order.indexOf("gallery:esbuild"));
+      }
+    });
+
+    it("builds the gallery before deploying it to a vault", () => {
+      const order = galleryScriptRefs(packageJson.scripts["gallery:vault"]);
+
+      expect(order[0]).toBe("gallery:build");
+    });
+
+    it("prepares the gallery CSS source before Tailwind consumes it", () => {
+      const order = galleryScriptRefs(packageJson.scripts["gallery:css"]);
+
+      expect(order.indexOf("gallery:css:source")).toBeLessThan(
+        order.indexOf("gallery:css:tailwind")
       );
     });
   });

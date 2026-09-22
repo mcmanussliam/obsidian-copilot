@@ -2,8 +2,9 @@ import esbuild from "esbuild";
 import process from "process";
 import { createRequire } from "module";
 import wasmPlugin from "./wasm-plugin.mjs";
-import nodeModuleShim, { nodeBuiltinExternals } from "./node-module-shim.mjs";
+import nodeModuleShim from "./node-module-shim.mjs";
 import svgrPlugin from "./svgr-plugin.mjs";
+import { baseEsbuildOptions, runEsbuildContext } from "./esbuild-base.mjs";
 
 // CommonJS plugin loaded via createRequire — pure JS, no ESM export needed.
 const patchRendererUnsafeUnref = createRequire(import.meta.url)("./patch-renderer-unsafe-unref.js");
@@ -48,49 +49,33 @@ const prod = process.argv[2] === "production";
 const bundleSizeGuard = createBundleSizeGuard({ production: prod });
 
 const context = await esbuild.context({
+  ...baseEsbuildOptions(prod, {
+    extraExternal: [
+      "@codemirror/autocomplete",
+      "@codemirror/collab",
+      "@codemirror/commands",
+      "@codemirror/language",
+      "@codemirror/lint",
+      "@codemirror/search",
+      "@codemirror/state",
+      "@codemirror/view",
+      "@lezer/common",
+      "@lezer/highlight",
+      "@lezer/lr",
+    ],
+    extraDefine: {
+      "import.meta.url": "import_meta.url",
+    },
+  }),
   banner: {
     js: banner,
   },
   entryPoints: ["src/main.ts"],
-  bundle: true,
-  external: [
-    "obsidian",
-    "electron",
-    "@codemirror/autocomplete",
-    "@codemirror/collab",
-    "@codemirror/commands",
-    "@codemirror/language",
-    "@codemirror/lint",
-    "@codemirror/search",
-    "@codemirror/state",
-    "@codemirror/view",
-    "@lezer/common",
-    "@lezer/highlight",
-    "@lezer/lr",
-    ...nodeBuiltinExternals,
-  ],
-  format: "cjs",
-  target: "es2020",
   charset: "utf8",
   legalComments: "eof",
-  logLevel: "info",
-  sourcemap: prod ? false : "inline",
-  treeShaking: true,
   outfile: "dist/main.js",
-  // Skill text shipped by the openartifacts package is imported as a string.
-  loader: { ".md": "text" },
   plugins: [nodeModuleShim, svgrPlugin, wasmPlugin, patchRendererUnsafeUnref, bundleSizeGuard],
-  define: {
-    global: "window",
-    "process.env.NODE_ENV": prod ? '"production"' : '"development"',
-    "import.meta.url": "import_meta.url",
-  },
   minify: prod,
 });
 
-if (prod) {
-  await context.rebuild();
-  process.exit(0);
-} else {
-  await context.watch();
-}
+await runEsbuildContext(context, prod);
