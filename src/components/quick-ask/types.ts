@@ -5,7 +5,7 @@
 import type { EditorView } from "@codemirror/view";
 import type { Editor } from "obsidian";
 import type CopilotPlugin from "@/main";
-import type { ReplaceGuard } from "@/editor/replaceGuard";
+import type { ReplaceGuard } from "@/editor/replace-guard";
 import type { ResizeDirection } from "@/hooks/use-resizable";
 
 /**

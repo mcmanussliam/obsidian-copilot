@@ -1,4 +1,4 @@
-import { ChainType } from "@/chainType";
+import { ChainType } from "@/chain-type";
 import {
   COPILOT_FOLDER_ROOT,
   DEFAULT_QA_EXCLUSIONS_SETTING,
@@ -19,7 +19,7 @@ import {
   CopilotSettings,
   getModelKeyFromModel,
 } from "@/settings/model";
-import { CustomModel } from "@/aiParams";
+import { CustomModel } from "@/ai-params";
 describe("sanitizeQaExclusions", () => {
   it("defaults to copilot root when value is not a string", () => {
     expect(sanitizeQaExclusions(undefined)).toBe(encodeURIComponent(DEFAULT_QA_EXCLUSIONS_SETTING));

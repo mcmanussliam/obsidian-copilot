@@ -1,4 +1,4 @@
-import { PromptContextEnvelope } from "@/context/PromptContextTypes";
+import { PromptContextEnvelope } from "@/context/prompt-context-types";
 import { TFile } from "obsidian";
 
 /**

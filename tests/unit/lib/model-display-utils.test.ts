@@ -1,6 +1,6 @@
 import { checkModelApiKey, err2String, getProviderLabel } from "@/lib/model-display-utils";
 import type { ModelApiKeySettings } from "@/lib/model-display-utils";
-import type { CustomModel } from "@/aiParams";
+import type { CustomModel } from "@/ai-params";
 
 const model = (overrides: Partial<CustomModel> = {}): CustomModel => ({
   name: "gpt-5",

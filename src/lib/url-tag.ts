@@ -9,7 +9,7 @@
  * unnecessary context re-materialization.
  */
 
-import { getYouTubeVideoId } from "@/utils/youtubeUrl";
+import { getYouTubeVideoId } from "@/utils/youtube-url";
 
 /**
  * The two kinds a context URL can be classified as. Single source of truth —
@@ -37,7 +37,7 @@ function stableId(type: UrlKind, url: string): string {
 /**
  * Detect whether a URL is a YouTube video (watch/shorts/embed/youtu.be).
  *
- * Reason: Reuses the structured URL parser `getYouTubeVideoId` from `@/utils/youtubeUrl`
+ * Reason: Reuses the structured URL parser `getYouTubeVideoId` from `@/utils/youtube-url.ts`
  * instead of a loose hostname check, so only actual video URLs are classified as
  * "youtube". Non-video YouTube pages (channels, playlists, homepage) correctly
  * fall through to "web", matching the downstream transcript pipeline expectation.

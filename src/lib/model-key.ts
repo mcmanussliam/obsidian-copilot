@@ -1,4 +1,4 @@
-import type { CustomModel } from "@/aiParams";
+import type { CustomModel } from "@/ai-params";
 
 /**
  * Return the stable model identity shared by selectors, persisted settings, and agent backends.

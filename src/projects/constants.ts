@@ -1,4 +1,4 @@
-import { ProjectConfig } from "@/aiParams";
+import { ProjectConfig } from "@/ai-params";
 
 /**
  * Empty project config used as default/fallback for missing fields.

@@ -1,22 +1,22 @@
-import { ProjectConfig } from "@/aiParams";
-import { FolderSearchModal } from "@/components/modals/FolderSearchModal";
-import type { ProcessingItem } from "@/components/project/processingAdapter";
+import { ProjectConfig } from "@/ai-params";
+import { FolderSearchModal } from "@/components/modals/folder-search-modal";
+import type { ProcessingItem } from "@/components/project/processing-adapter";
 import {
   buildProcessingItemLookup,
   ProcessingStatusIcon,
   processingSourceKey,
-} from "@/components/project/processingItemStatusView";
-import { useAgentProcessingItems } from "@/components/project/useAgentProcessingItems";
-import { openAgentCachedItemPreview } from "@/utils/cacheFileOpener";
-import { ProjectFileSelectModal } from "@/components/modals/ProjectFileSelectModal";
-import { PropertySearchModal } from "@/components/modals/PropertySearchModal";
-import { TagSearchModal } from "@/components/modals/TagSearchModal";
-import { getBadgeLabel } from "@/components/project/ProjectContextBadgeList";
-import { TruncatedText } from "@/components/TruncatedText";
+} from "@/components/project/processing-item-status-view";
+import { useAgentProcessingItems } from "@/components/project/use-agent-processing-items";
+import { openAgentCachedItemPreview } from "@/utils/cache-file-opener";
+import { ProjectFileSelectModal } from "@/components/modals/project-file-select-modal";
+import { PropertySearchModal } from "@/components/modals/property-search-modal";
+import { TagSearchModal } from "@/components/modals/tag-search-modal";
+import { getBadgeLabel } from "@/components/project/project-context-badge-list";
+import { TruncatedText } from "@/components/truncated-text";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { SearchBar } from "@/components/ui/search-bar";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
@@ -26,7 +26,7 @@ import {
   getTagPattern,
   PatternCategory,
   shouldIndexFile,
-} from "@/search/searchUtils";
+} from "@/search/search-utils";
 import { getTagsFromNote } from "@/utils";
 import {
   ArrowUpRight,
@@ -45,13 +45,13 @@ import { App, Modal, Notice, Platform, TFile } from "obsidian";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Root } from "react-dom/client";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
-import { createPluginRoot } from "@/utils/react/createPluginRoot";
+import { createPluginRoot } from "@/utils/react/create-plugin-root";
 import {
   LinksContentPanel,
   LinksSidebarSection,
-} from "@/components/modals/project/ContextManageLinksPanel";
-import { useContextUrls } from "@/components/modals/project/useContextUrls";
-import { UrlTypeIcon } from "@/components/project/UrlTypeIcon";
+} from "@/components/modals/project/context-manage-links-panel";
+import { useContextUrls } from "@/components/modals/project/use-context-urls";
+import { UrlTypeIcon } from "@/components/project/url-type-icon";
 
 function FileIcon({ extension, size = "tw-size-4" }: { extension: string; size?: string }) {
   const ext = extension.toLowerCase().replace("*.", "");

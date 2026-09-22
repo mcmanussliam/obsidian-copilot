@@ -1,8 +1,11 @@
-import { mountPluginViewRoot, type PluginViewRootHandle } from "@/utils/react/mountPluginViewRoot";
+import {
+  mountPluginViewRoot,
+  type PluginViewRootHandle,
+} from "@/utils/react/mount-plugin-view-root";
 import { fireEvent, render, type RenderResult } from "@testing-library/react";
 import GalleryPlugin, { GALLERY_VIEWTYPE, type GalleryHandle } from "./main";
 import type { AuditReport } from "./audit";
-import type { GalleryViewState } from "./Gallery";
+import type { GalleryViewState } from "./gallery";
 import type { App, Command, PluginManifest, WorkspaceLeaf } from "obsidian";
 import type { ReactElement, ReactNode } from "react";
 import { MessageChannel as TestMessageChannel } from "worker_threads";
@@ -11,7 +14,9 @@ jest.mock(
   "./stories.generated",
   () => {
     const loaders = [
-      jest.fn(() => Promise.resolve(jest.requireActual("@/agentMode/ui/AgentWelcomeCard.stories"))),
+      jest.fn(() =>
+        Promise.resolve(jest.requireActual("@/agent-mode/ui/agent-welcome-card.stories"))
+      ),
       jest.fn(() => Promise.resolve(jest.requireActual("@/components/ui/badge.stories"))),
       jest.fn(() => Promise.resolve(jest.requireActual("@/components/ui/button.stories"))),
       jest.fn(() => Promise.resolve(jest.requireActual("@/components/gallery-hosts.stories"))),
@@ -30,7 +35,7 @@ jest.mock(
     return {
       modules: [
         {
-          componentId: "@/agentMode/ui/AgentWelcomeCard",
+          componentId: "@/agent-mode/ui/agent-welcome-card",
           load: loaders[0],
         },
         {
@@ -57,7 +62,7 @@ jest.mock(
   { virtual: true }
 );
 
-jest.mock("@/utils/react/mountPluginViewRoot", () => ({
+jest.mock("@/utils/react/mount-plugin-view-root", () => ({
   mountPluginViewRoot: jest.fn(),
 }));
 

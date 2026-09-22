@@ -1,4 +1,7 @@
-import { mountPluginViewRoot, type PluginViewRootHandle } from "@/utils/react/mountPluginViewRoot";
+import {
+  mountPluginViewRoot,
+  type PluginViewRootHandle,
+} from "@/utils/react/mount-plugin-view-root";
 import { ItemView, Plugin, type WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import {
@@ -10,7 +13,7 @@ import {
   type GalleryViewState,
   type LoadedStoryModule,
   resolveGalleryViewState,
-} from "./Gallery";
+} from "./gallery";
 import {
   type AuditFinding,
   type AuditReport,

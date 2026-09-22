@@ -1,37 +1,37 @@
-import { logFileManager } from "@/logFileManager";
-import { FileCache } from "@/cache/fileCache";
+import { logFileManager } from "@/log-file-manager";
+import { FileCache } from "@/cache/file-cache";
 import { logError } from "@/logger";
 import {
   clearRecordedPromptPayload,
   flushRecordedPromptPayloadToLog,
-} from "@/LLMProviders/chainRunner/utils/promptPayloadRecorder";
+} from "@/llm-providers/chain-runner/utils/prompt-payload-recorder";
 
-import { CustomCommandSettingsModal } from "@/commands/CustomCommandSettingsModal";
+import { CustomCommandSettingsModal } from "@/commands/custom-command-settings-modal";
 import { EMPTY_COMMAND } from "@/commands/constants";
-import { CustomCommandManager } from "@/commands/customCommandManager";
+import { CustomCommandManager } from "@/commands/custom-command-manager";
 import { getCachedCustomCommands } from "@/commands/state";
 import { CustomCommand } from "@/commands/type";
 import {
   QUICK_COMMAND_SYSTEM_PROMPT,
   appendIncludeNoteContextPlaceholders,
-} from "@/commands/quickCommandPrompts";
-import { CustomCommandChatModal } from "@/commands/CustomCommandChatModal";
-import { ApplyCustomCommandModal } from "@/components/modals/ApplyCustomCommandModal";
-import { YoutubeTranscriptModal } from "@/components/modals/YoutubeTranscriptModal";
-import { checkIsPaidUser } from "@/plusUtils";
+} from "@/commands/quick-command-prompts";
+import { CustomCommandChatModal } from "@/commands/custom-command-chat-modal";
+import { ApplyCustomCommandModal } from "@/components/modals/apply-custom-command-modal";
+import { YoutubeTranscriptModal } from "@/components/modals/youtube-transcript-modal";
+import { checkIsPaidUser } from "@/plus-utils";
 import type CopilotPlugin from "@/main";
-import { MiyoRequestError } from "@/miyo/MiyoClient";
-import { requestMiyoIndexRefresh } from "@/miyo/miyoIndex";
-import { getMiyoCustomUrl } from "@/miyo/miyoUtils";
-import { getAllQAMarkdownContent } from "@/search/searchUtils";
+import { MiyoRequestError } from "@/miyo/miyo-client";
+import { requestMiyoIndexRefresh } from "@/miyo/miyo-index";
+import { getMiyoCustomUrl } from "@/miyo/miyo-utils";
+import { getAllQAMarkdownContent } from "@/search/search-utils";
 import { getSettings } from "@/settings/model";
 import { NoteSelectedTextContext, WebSelectedTextContext } from "@/types/message";
 import { isSourceModeOn } from "@/utils";
-import { isDesktopRuntime } from "@/utils/desktopRuntime";
+import { isDesktopRuntime } from "@/utils/desktop-runtime";
 import { Editor, MarkdownView, Notice, TFile } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { COMMAND_IDS, COMMAND_ICONS, COMMAND_NAMES, CommandId } from "@/constants";
-import { setSelectedTextContexts } from "@/aiParams";
+import { setSelectedTextContexts } from "@/ai-params";
 
 type PublishFile = (file: TFile) => void;
 
@@ -272,8 +272,8 @@ export function registerCommands(plugin: CopilotPlugin, publish: PublishFile) {
       // clear() is root-confined to `context-cache/` — it never ascends to the
       // parent `vaults/<id>/`, so `agent-chat-index.json` is untouched.
       if (isDesktopRuntime()) {
-        const { cacheRoot } = await import("@/context/conversionsLocation");
-        const { createNodeContextCacheFs } = await import("@/context/contextCacheFs");
+        const { cacheRoot } = await import("@/context/conversions-location");
+        const { createNodeContextCacheFs } = await import("@/context/context-cache-fs");
         await createNodeContextCacheFs(cacheRoot(plugin.app)).clear();
       }
 
@@ -356,7 +356,7 @@ export function registerCommands(plugin: CopilotPlugin, publish: PublishFile) {
     }
 
     const { getWebViewerService } =
-      await import("@/services/webViewerService/webViewerServiceSingleton");
+      await import("@/services/web-viewer-service/web-viewer-service-singleton");
 
     try {
       const service = getWebViewerService(plugin.app);

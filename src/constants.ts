@@ -1,7 +1,7 @@
-import { CustomModel } from "@/aiParams";
+import { CustomModel } from "@/ai-params";
 import { type CopilotSettings } from "@/settings/model";
 import { v4 as uuidv4 } from "uuid";
-import { ChainType } from "./chainType";
+import { ChainType } from "./chain-type";
 import { PromptSortStrategy } from "./types";
 
 // Copilot website usage dashboard (view usage, purchase credits). Used as the

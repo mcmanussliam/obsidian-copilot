@@ -7,7 +7,7 @@ import {
   getModelDisplayWithIcons,
   hasCapabilityIcons,
 } from "@/components/ui/model-display";
-import type { CustomModel } from "@/aiParams";
+import type { CustomModel } from "@/ai-params";
 import { ModelCapability } from "@/constants";
 
 const NO_VISION = "model-cap-no-vision";

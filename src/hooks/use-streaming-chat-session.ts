@@ -14,10 +14,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RunnableSequence } from "@langchain/core/runnables";
 import type { BaseChatMemory } from "@langchain/classic/memory";
 
-import type { CustomModel } from "@/aiParams";
-import { createChatChain, createChatMemory } from "@/commands/customCommandChatEngine";
-import { compactAssistantOutput } from "@/context/ChatHistoryCompactor";
-import { ThinkBlockStreamer } from "@/LLMProviders/chainRunner/utils/ThinkBlockStreamer";
+import type { CustomModel } from "@/ai-params";
+import { createChatChain, createChatMemory } from "@/commands/custom-command-chat-engine";
+import { compactAssistantOutput } from "@/context/chat-history-compactor";
+import { ThinkBlockStreamer } from "@/llm-providers/chain-runner/utils/think-block-streamer";
 import { ABORT_REASON } from "@/constants";
 import { logError } from "@/logger";
 import { useRafThrottledCallback } from "@/hooks/use-raf-throttled-callback";

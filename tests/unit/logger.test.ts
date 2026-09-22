@@ -9,7 +9,7 @@ jest.mock("@/settings/model", () => ({
 const mockAppend = jest.fn<Promise<void>, [string, ...unknown[]]>();
 const mockAppendMarkdownBlock = jest.fn<Promise<void>, [string[]]>();
 
-jest.mock("@/logFileManager", () => ({
+jest.mock("@/log-file-manager", () => ({
   logFileManager: {
     append: (level: string, ...args: unknown[]) => mockAppend(level, ...args),
     appendMarkdownBlock: (lines: string[]) => mockAppendMarkdownBlock(lines),

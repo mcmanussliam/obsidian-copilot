@@ -10,13 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
-import { TruncatedText } from "@/components/TruncatedText";
-import type { ProcessingItem } from "@/components/project/processingAdapter";
+import { TruncatedText } from "@/components/truncated-text";
+import type { ProcessingItem } from "@/components/project/processing-adapter";
 import {
   getProcessingStatusLabel,
   processingItemKey,
   ProcessingStatusIcon,
-} from "@/components/project/processingItemStatusView";
+} from "@/components/project/processing-item-status-view";
 import {
   AlertCircle,
   ArrowUpRight,

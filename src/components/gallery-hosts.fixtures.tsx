@@ -1,4 +1,4 @@
-import { ChatInputProvider } from "@/context/ChatInputContext";
+import { ChatInputProvider } from "@/context/chat-input-context";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppContext, EventTargetContext, useApp } from "@/context";
 import * as React from "react";

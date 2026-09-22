@@ -1,12 +1,12 @@
 import { migrateCommands, generateDefaultCommands } from "@/commands/migrator";
 import { getCachedCustomCommands } from "@/commands/state";
-import { validateCommandName } from "@/commands/customCommandUtils";
+import { validateCommandName } from "@/commands/custom-command-utils";
 import { getSettings, updateSetting } from "@/settings/model";
 import type { App } from "obsidian";
 
 const mockUpdateCommands = jest.fn().mockResolvedValue(undefined);
 
-jest.mock("@/commands/customCommandManager", () => ({
+jest.mock("@/commands/custom-command-manager", () => ({
   CustomCommandManager: {
     getInstance: jest.fn(() => ({ updateCommands: mockUpdateCommands })),
   },
@@ -16,7 +16,7 @@ jest.mock("@/commands/state", () => ({
   getCachedCustomCommands: jest.fn(() => []),
 }));
 
-jest.mock("@/commands/customCommandUtils", () => ({
+jest.mock("@/commands/custom-command-utils", () => ({
   getCustomCommandsFolder: jest.fn(() => "copilot/custom-prompts"),
   validateCommandName: jest.fn(() => null),
 }));

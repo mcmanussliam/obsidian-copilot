@@ -5,7 +5,7 @@ export * from "./type";
 export * from "./constants";
 
 // Utils
-export * from "./systemPromptUtils";
+export * from "./system-prompt-utils";
 
 // State management
 export * from "./state";
@@ -15,10 +15,10 @@ export {
   getEffectiveUserPrompt,
   getSystemPrompt,
   getSystemPromptWithMemory,
-} from "./systemPromptBuilder";
+} from "./system-prompt-builder";
 
 // Register
-export { SystemPromptRegister } from "./systemPromptRegister";
+export { SystemPromptRegister } from "./system-prompt-register";
 
 // Migration
 export { migrateSystemPromptsFromSettings } from "./migration";

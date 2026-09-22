@@ -4,7 +4,7 @@ import {
   getFilePattern,
   shouldIndexFile,
   PatternCategory,
-} from "@/search/searchUtils";
+} from "@/search/search-utils";
 
 // shouldIndexFile is mocked, so the app is only threaded through and never inspected.
 const mockApp = {} as unknown as App;
@@ -26,7 +26,7 @@ jest.mock("obsidian", () => ({
   },
 }));
 
-jest.mock("@/search/searchUtils", () => ({
+jest.mock("@/search/search-utils", () => ({
   getMatchingPatterns: jest.fn(),
   shouldIndexFile: jest.fn(),
   getFilePattern: jest.fn(),

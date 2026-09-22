@@ -1,7 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
-import nodeModuleShim, { nodeBuiltinExternals } from "../../scripts/build/nodeModuleShim.mjs";
-import svgrPlugin from "../../scripts/build/svgrPlugin.mjs";
+import nodeModuleShim, { nodeBuiltinExternals } from "../../scripts/build/node-module-shim.mjs";
+import svgrPlugin from "../../scripts/build/svgr-plugin.mjs";
 
 const prod = process.argv[2] === "production";
 

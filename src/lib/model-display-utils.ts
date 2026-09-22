@@ -1,9 +1,9 @@
-import type { CustomModel } from "@/aiParams";
+import type { CustomModel } from "@/ai-params";
 import { ChatModelProviders, ProviderInfo, ProviderSettingsKeyMap } from "@/constants";
 import type { Provider, SettingKeyProviders } from "@/constants";
 import type { CopilotSettings } from "@/settings/model";
 
-export { err2String } from "@/errorFormat";
+export { err2String } from "@/error-format";
 
 export type ModelApiKeySettings = Pick<
   CopilotSettings,

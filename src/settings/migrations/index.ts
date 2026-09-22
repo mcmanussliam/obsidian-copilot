@@ -12,8 +12,8 @@
 
 import { DEFAULT_COPILOT_FOLDER } from "@/constants";
 import { logInfo } from "@/logger";
-import { seedDocProcessorBackend } from "@/miyo/miyoUtils";
-import type { ModelManagementApi } from "@/modelManagement";
+import { seedDocProcessorBackend } from "@/miyo/miyo-utils";
+import type { ModelManagementApi } from "@/model-management";
 import {
   getSettings,
   normalizeRootFolders,
@@ -21,13 +21,13 @@ import {
   updateAgentModeBackendFields,
 } from "@/settings/model";
 
-import { executeAzureRemoval } from "./azureRemovalMigration";
-import { executeBedrockRemoval } from "./bedrockRemovalMigration";
-import { executeByokMigration } from "./byokMigration";
-import { planCodexModelIdCollapse } from "./codexModelIdMigration";
-import { executeGitHubCopilotRemoval } from "./githubCopilotRemovalMigration";
-import { planOptionalCustomProviderAuthMigration } from "./optionalCustomProviderAuthMigration";
-import { planRequiresApiKeyBackfill } from "./requiresApiKeyMigration";
+import { executeAzureRemoval } from "./azure-removal-migration";
+import { executeBedrockRemoval } from "./bedrock-removal-migration";
+import { executeByokMigration } from "./byok-migration";
+import { planCodexModelIdCollapse } from "./codex-model-id-migration";
+import { executeGitHubCopilotRemoval } from "./github-copilot-removal-migration";
+import { planOptionalCustomProviderAuthMigration } from "./optional-custom-provider-auth-migration";
+import { planRequiresApiKeyBackfill } from "./requires-api-key-migration";
 import { CURRENT_SETTINGS_VERSION } from "./version";
 
 export { CURRENT_SETTINGS_VERSION } from "./version";

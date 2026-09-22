@@ -27,11 +27,11 @@ describe("gen-gallery-stories", () => {
   describe("generator CLI", () => {
     it("writes a deterministic sorted import for every story across src", async () => {
       await Promise.all([
-        addFile(projectRoot, "src/wired/Zeta.stories.tsx"),
+        addFile(projectRoot, "src/wired/zeta.stories.tsx"),
         addFile(projectRoot, "src/components/ui/alpha.stories.tsx"),
-        addFile(projectRoot, "src/agentMode/ui/nested/Agent Card.stories.tsx"),
+        addFile(projectRoot, "src/agent-mode/ui/nested/agent-card.stories.tsx"),
         addFile(projectRoot, "src/components/ui/alpha.tsx"),
-        addFile(projectRoot, "src/agentMode/ui/nested/Agent Card.tsx"),
+        addFile(projectRoot, "src/agent-mode/ui/nested/agent-card.tsx"),
       ]);
 
       await execFileAsync(process.execPath, [GENERATOR_PATH], { cwd: projectRoot });
@@ -48,16 +48,16 @@ describe("gen-gallery-stories", () => {
       expect(secondOutput).toBe(firstOutput);
       expect(firstOutput.match(/load: \(\): Promise<unknown> => import\(/g)).toHaveLength(3);
       expect(firstOutput).toContain(
-        'componentId: "@/agentMode/ui/nested/Agent Card",\n    load: (): Promise<unknown> => import("@/agentMode/ui/nested/Agent Card.stories")'
+        'componentId: "@/agent-mode/ui/nested/agent-card",\n    load: (): Promise<unknown> => import("@/agent-mode/ui/nested/agent-card.stories")'
       );
       expect(firstOutput).toContain(
-        'componentId: null,\n    load: (): Promise<unknown> => import("@/wired/Zeta.stories")'
+        'componentId: null,\n    load: (): Promise<unknown> => import("@/wired/zeta.stories")'
       );
-      expect(firstOutput.indexOf("Agent Card.stories")).toBeLessThan(
+      expect(firstOutput.indexOf("agent-card.stories")).toBeLessThan(
         firstOutput.indexOf("alpha.stories")
       );
       expect(firstOutput.indexOf("alpha.stories")).toBeLessThan(
-        firstOutput.indexOf("Zeta.stories")
+        firstOutput.indexOf("zeta.stories")
       );
       expect(firstOutput).not.toContain(projectRoot);
       expect(firstOutput).not.toContain("\\");
@@ -68,12 +68,12 @@ describe("gen-gallery-stories", () => {
         addFile(projectRoot, "src/components/ui/button.tsx"),
         addFile(projectRoot, "src/components/ui/button.test.tsx"),
         addFile(projectRoot, "src/components/ui/button.stories.tsx"),
-        addFile(projectRoot, "src/agentMode/ui/AgentWelcomeCard.tsx"),
-        addFile(projectRoot, "src/agentMode/skills/ui/nested/SkillCard.tsx"),
-        addFile(projectRoot, "src/modelManagement/ui/dialogs/ModelDialog.tsx"),
-        addFile(projectRoot, "src/future/ui/FutureCard.tsx"),
-        addFile(projectRoot, "src/future/ui/FutureCard.stories.tsx"),
-        addFile(projectRoot, "src/wired/WiredComponent.tsx"),
+        addFile(projectRoot, "src/agent-mode/ui/agent-welcome-card.tsx"),
+        addFile(projectRoot, "src/agent-mode/skills/ui/nested/skill-card.tsx"),
+        addFile(projectRoot, "src/model-management/ui/dialogs/model-dialog.tsx"),
+        addFile(projectRoot, "src/future/ui/future-card.tsx"),
+        addFile(projectRoot, "src/future/ui/future-card.stories.tsx"),
+        addFile(projectRoot, "src/wired/wired-component.tsx"),
         addFile(projectRoot, "src/components/ui/helper.ts"),
       ]);
 
@@ -86,7 +86,7 @@ describe("gen-gallery-stories", () => {
       expect(output).toContain("export const presentationalComponentCount = 5;");
       expect(output).toContain('componentId: "@/components/ui/button"');
       expect(output).toContain(
-        'componentId: "@/future/ui/FutureCard",\n    load: (): Promise<unknown> => import("@/future/ui/FutureCard.stories")'
+        'componentId: "@/future/ui/future-card",\n    load: (): Promise<unknown> => import("@/future/ui/future-card.stories")'
       );
     });
   });

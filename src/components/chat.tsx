@@ -1,0 +1,831 @@
+import {
+  clearSelectedTextContexts,
+  getSelectedTextContexts,
+  removeSelectedTextContext,
+  useChainType,
+  useModelKey,
+  useSelectedTextContexts,
+} from "@/ai-params";
+import { resetSessionSystemPromptSettings } from "@/system-prompts";
+import { logInfo, logError } from "@/logger";
+import type { WebTabContext } from "@/types/message";
+
+import { ChatControls } from "@/components/chat-components/chat-controls";
+import ChatInput from "@/components/chat-components/chat-mode-input";
+import ChatMessages, { isChatEmpty } from "@/components/chat-components/chat-messages";
+import { AgentModeBanner } from "@/components/chat-components/ui/agent-mode-banner";
+import { useChatModelPicker } from "@/components/chat-components/use-chat-model-picker";
+import {
+  ABORT_REASON,
+  AI_SENDER,
+  EVENT_NAMES,
+  LOADING_MESSAGES,
+  RESTRICTION_MESSAGES,
+  USER_SENDER,
+} from "@/constants";
+import { AppContext, ChatViewEventTarget, EventTargetContext } from "@/context";
+import { ChatInputProvider, useChatInput } from "@/context/chat-input-context";
+import { useChatManager } from "@/hooks/use-chat-manager";
+import { useChatFileDrop } from "@/hooks/use-chat-file-drop";
+import { getAIResponse } from "@/langchain-stream";
+import ChainManager from "@/llm-providers/chain-manager";
+import { clearRecordedPromptPayload } from "@/llm-providers/chain-runner/utils/prompt-payload-recorder";
+import { logFileManager } from "@/log-file-manager";
+import CopilotPlugin from "@/main";
+import { getModelKeyFromModel, useSettingsValue } from "@/settings/model";
+import { ChatManagerChatUIState } from "@/state/chat-ui-state";
+import { FileParserManager } from "@/tools/file-parser-manager";
+import { ChatMessage } from "@/types/message";
+import { err2String, isPlusChain, modelSupportsVision } from "@/utils";
+import { arrayBufferToBase64 } from "@/utils/base64";
+import { appendUniqueFiles } from "@/utils/file-list-utils";
+import { Notice, TFile } from "obsidian";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { ChatHistoryItem } from "@/components/chat-components/chat-history-popover";
+import { useActiveWebTabState } from "@/components/chat-components/hooks/use-active-web-tab-state";
+import { safeAsyncHandler } from "@/utils/safe-async-handler";
+
+interface ChatProps {
+  chainManager: ChainManager;
+  onSaveChat: (saveAsNote: () => Promise<void>) => void;
+  updateUserMessageHistory: (newMessage: string) => void;
+  fileParserManager: FileParserManager;
+  plugin: CopilotPlugin;
+  chatUIState: ChatManagerChatUIState;
+}
+
+// Internal component that has access to the ChatInput context
+const ChatInternal: React.FC<ChatProps & { chatInput: ReturnType<typeof useChatInput> }> = ({
+  chainManager,
+  onSaveChat,
+  updateUserMessageHistory,
+  fileParserManager,
+  plugin,
+  chatUIState,
+  chatInput,
+}) => {
+  const settings = useSettingsValue();
+  const eventTarget = useContext(EventTargetContext);
+
+  const {
+    messages: chatHistory,
+    sourcePath,
+    addMessage: rawAddMessage,
+  } = useChatManager(chatUIState);
+  const [currentModelKey, setCurrentModelKey] = useModelKey();
+  const [currentChain] = useChainType();
+  // Non-agent chat picker sourced from the model-management "chat" backend.
+  const chatModelPicker = useChatModelPicker({
+    value: currentModelKey,
+    onChange: setCurrentModelKey,
+  });
+  const [currentAiMessage, setCurrentAiMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState("");
+  const abortControllerRef = useRef<AbortController | null>(null);
+  // Stable ID for streaming message, shared with final persisted message
+  // This allows collapsible UI state (think blocks) to persist across streaming -> history
+  const streamingMessageIdRef = useRef<string | null>(null);
+
+  // Wrapper for addMessage that attaches streaming ID and tracks token usage
+  const addMessage = useCallback(
+    (message: ChatMessage) => {
+      // Attach streaming ID to final AI message so it shares the same ID as streaming placeholder
+      const streamingId = streamingMessageIdRef.current;
+      const shouldAttachId =
+        streamingId && message.sender === AI_SENDER && !message.isErrorMessage && !message.id;
+      const messageToAdd = shouldAttachId ? { ...message, id: streamingId } : message;
+
+      rawAddMessage(messageToAdd);
+    },
+    [rawAddMessage]
+  );
+
+  // Function to set the abort controller ref (for getAIResponse compatibility)
+  const setAbortController = useCallback((controller: AbortController | null) => {
+    abortControllerRef.current = controller;
+  }, []);
+
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES.DEFAULT);
+  const [contextNotes, setContextNotes] = useState<TFile[]>([]);
+  const [includeActiveNote, setIncludeActiveNote] = useState(
+    settings.autoAddActiveContentToContext === true
+  );
+  const [includeActiveWebTab, setIncludeActiveWebTab] = useState(
+    settings.autoAddActiveContentToContext === true
+  );
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [chatHistoryItems, setChatHistoryItems] = useState<ChatHistoryItem[]>([]);
+  // Track if component is mounted to prevent state updates after unmount
+  const isMountedRef = useRef(false);
+
+  // Ref for the chat container (used for drag-and-drop)
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Persist editor selection highlight when clicking into Chat
+   */
+  const handleChatPointerDownCapture = useCallback((): void => {
+    plugin.chatSelectionHighlightController.persistFromPointerDown();
+  }, [plugin]);
+
+  // Safe setter utilities - automatically wrap state setters to prevent updates after unmount
+  const safeSet = useMemo<{
+    setCurrentAiMessage: (value: string) => void;
+    setLoadingMessage: (value: string) => void;
+    setLoading: (value: boolean) => void;
+  }>(
+    () => ({
+      setCurrentAiMessage: (value: string) => isMountedRef.current && setCurrentAiMessage(value),
+      setLoadingMessage: (value: string) => isMountedRef.current && setLoadingMessage(value),
+      setLoading: (value: boolean) => isMountedRef.current && setLoading(value),
+    }),
+    []
+  );
+
+  const [selectedTextContexts] = useSelectedTextContexts();
+
+  // Active web tabs retain selection precedence.
+  const hasAnySelection = selectedTextContexts.length > 0;
+  const effectiveIncludeActiveWebTab = includeActiveWebTab && !hasAnySelection;
+
+  const { activeWebTabForMentions: currentActiveWebTab } = useActiveWebTabState();
+
+  const latestTokenCount = useMemo(() => {
+    for (let i = chatHistory.length - 1; i >= 0; i--) {
+      const m = chatHistory[i];
+      if (m.sender === AI_SENDER) return m.responseMetadata?.tokenUsage?.totalTokens ?? null;
+    }
+    return null;
+  }, [chatHistory]);
+
+  const [selectedChain] = useChainType();
+
+  const appContext = useContext(AppContext);
+  const app = plugin.app || appContext;
+
+  /**
+   * Add selected image files while preserving the original selection order.
+   */
+  const handleAddImage = useCallback((files: File[]) => {
+    setSelectedImages((prev) => appendUniqueFiles(prev, files));
+  }, []);
+
+  // Drag-and-drop hook for file handling
+  const { isDragActive } = useChatFileDrop({
+    app,
+    contextNotes,
+    setContextNotes,
+    selectedImages,
+    onAddImage: handleAddImage,
+    containerRef: chatContainerRef,
+  });
+
+  const handleSendMessage = async ({
+    toolCalls,
+    urls,
+    contextNotes: passedContextNotes,
+    contextTags,
+    contextFolders,
+    webTabs,
+  }: {
+    toolCalls?: string[];
+    urls?: string[];
+    contextNotes?: TFile[];
+    contextTags?: string[];
+    contextFolders?: string[];
+    webTabs?: WebTabContext[];
+  } = {}) => {
+    if (!inputMessage && selectedImages.length === 0) return;
+
+    // Check for URL restrictions in non-Plus chains and show notice, but continue processing
+    const hasUrlsInContext = urls && urls.length > 0;
+
+    if (hasUrlsInContext && !isPlusChain(currentChain)) {
+      // Show notice but continue processing the message without URL context
+      new Notice(RESTRICTION_MESSAGES.URL_PROCESSING_RESTRICTED);
+    }
+
+    // Hard-block sending images to a model that is KNOWN to lack vision. We only
+    // block when capabilities are populated (an empty array still means "known");
+    // undefined capabilities mean "unknown" and must not block. Inputs are left
+    // intact so the user can switch models without retyping.
+    if (selectedImages.length > 0) {
+      const activeModel = chatModelPicker.models.find(
+        (m) => getModelKeyFromModel(m) === chatModelPicker.value
+      );
+      if (Array.isArray(activeModel?.capabilities) && !modelSupportsVision(activeModel)) {
+        const modelLabel = activeModel.displayName || activeModel.name;
+        new Notice(
+          `${modelLabel} doesn't support images. Switch to a vision-capable model to send images.`
+        );
+        return;
+      }
+    }
+
+    try {
+      // Create message content array
+      type MessageContentItem =
+        | { type: "text"; text: string }
+        | { type: "image_url"; image_url: { url: string } };
+      const content: MessageContentItem[] = [];
+
+      // Add text content if present
+      if (inputMessage) {
+        content.push({
+          type: "text",
+          text: inputMessage,
+        });
+      }
+
+      // Add images if present
+      for (const image of selectedImages) {
+        const imageData = await image.arrayBuffer();
+        const base64Image = arrayBufferToBase64(imageData);
+        content.push({
+          type: "image_url",
+          image_url: {
+            url: `data:${image.type};base64,${base64Image}`,
+          },
+        });
+      }
+
+      // Prepare context notes and deduplicate by path
+      const allNotes = [...(passedContextNotes || []), ...contextNotes];
+      const notes = allNotes.filter(
+        (note, index, array) => array.findIndex((n) => n.path === note.path) === index
+      );
+
+      // Handle composer prompt
+      let displayText = inputMessage.trim();
+
+      // Add tool calls if present
+      if (toolCalls) {
+        displayText += " " + toolCalls.join("\n");
+      }
+
+      // Create message context - filter out URLs for non-Plus chains
+      const context = {
+        notes,
+        urls: isPlusChain(currentChain) ? urls || [] : [],
+        tags: contextTags || [],
+        folders: contextFolders || [],
+        selectedTextContexts,
+        webTabs: webTabs || [],
+      };
+
+      // Clear input and images
+      setInputMessage("");
+      setSelectedImages([]);
+      streamingMessageIdRef.current = `msg-${uuidv4()}`;
+      safeSet.setLoading(true);
+      safeSet.setLoadingMessage(LOADING_MESSAGES.DEFAULT);
+
+      // Send message through ChatManager (this handles all the complex context processing)
+      const messageId = await chatUIState.sendMessage(
+        displayText,
+        context,
+        currentChain,
+        includeActiveNote,
+        effectiveIncludeActiveWebTab,
+        content.length > 0 ? content : undefined,
+        safeSet.setLoadingMessage
+      );
+
+      // Add to user message history
+      if (inputMessage) {
+        updateUserMessageHistory(inputMessage);
+      }
+
+      // Autosave if enabled
+      if (settings.autosaveChat) {
+        await handleSaveAsNote();
+      }
+
+      const llmMessage = chatUIState.getLLMMessage(messageId);
+      if (llmMessage) {
+        await getAIResponse(
+          llmMessage,
+          chainManager,
+          addMessage,
+          safeSet.setCurrentAiMessage,
+          setAbortController,
+          { debug: settings.debug, updateLoadingMessage: safeSet.setLoadingMessage }
+        );
+      }
+
+      // Autosave again after AI response
+      if (settings.autosaveChat) {
+        await handleSaveAsNote();
+      }
+    } catch (error) {
+      logError("Error sending message:", error);
+      new Notice("Failed to send message. Please try again.");
+    } finally {
+      safeSet.setLoading(false);
+      safeSet.setLoadingMessage(LOADING_MESSAGES.DEFAULT);
+      streamingMessageIdRef.current = null;
+    }
+  };
+
+  const handleSaveAsNote = useCallback(async () => {
+    if (!app) {
+      logError("App instance is not available.");
+      return;
+    }
+
+    try {
+      // Use the new ChatManager persistence functionality
+      await chatUIState.saveChat(currentModelKey);
+    } catch (error) {
+      logError("Error saving chat as note:", err2String(error));
+      new Notice("Failed to save chat as note. Check console for details.");
+    }
+  }, [app, chatUIState, currentModelKey]);
+
+  const handleStopGenerating = useCallback(
+    (reason?: ABORT_REASON) => {
+      if (abortControllerRef.current) {
+        logInfo(`stopping generation..., reason: ${reason}`);
+        abortControllerRef.current.abort(reason);
+        safeSet.setLoading(false);
+        safeSet.setLoadingMessage(LOADING_MESSAGES.DEFAULT);
+        // Keep the partial AI message visible
+        // Don't clear setCurrentAiMessage here
+      }
+    },
+    [safeSet]
+  );
+
+  // Cleanup on unmount - abort any ongoing streaming
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      // Abort any ongoing streaming when component unmounts
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort(ABORT_REASON.UNMOUNT);
+      }
+    };
+  }, []); // No dependencies - only run on mount/unmount
+
+  const handleRegenerate = useCallback(
+    async (messageIndex: number) => {
+      if (messageIndex <= 0) {
+        new Notice("Cannot regenerate the first message.");
+        return;
+      }
+
+      const messageToRegenerate = chatHistory[messageIndex];
+      if (!messageToRegenerate) {
+        new Notice("Message not found.");
+        return;
+      }
+
+      // Clear current AI message and set loading state
+      safeSet.setCurrentAiMessage("");
+      streamingMessageIdRef.current = `msg-${uuidv4()}`;
+      safeSet.setLoading(true);
+      try {
+        const success = await chatUIState.regenerateMessage(
+          messageToRegenerate.id!,
+          safeSet.setCurrentAiMessage,
+          addMessage
+        );
+
+        if (!success) {
+          new Notice("Failed to regenerate message. Please try again.");
+        } else if (settings.debug) {
+          logInfo("Message regenerated successfully");
+        }
+
+        // Autosave the chat if the setting is enabled
+        if (settings.autosaveChat) {
+          await handleSaveAsNote();
+        }
+      } catch (error) {
+        logError("Error regenerating message:", error);
+        new Notice("Failed to regenerate message. Please try again.");
+      } finally {
+        safeSet.setLoading(false);
+        streamingMessageIdRef.current = null;
+      }
+    },
+    [
+      chatHistory,
+      chatUIState,
+      settings.debug,
+      settings.autosaveChat,
+      handleSaveAsNote,
+      addMessage,
+      safeSet,
+    ]
+  );
+
+  const handleEdit = useCallback(
+    async (messageIndex: number, newMessage: string) => {
+      const messageToEdit = chatHistory[messageIndex];
+      if (!messageToEdit || messageToEdit.message === newMessage) {
+        return;
+      }
+
+      try {
+        // Inline edits retain stored attachments; the composer may refer to another note.
+        // https://github.com/Brevilabs/obsidian-copilot-private/issues/465
+        const success = await chatUIState.editMessage(
+          messageToEdit.id!,
+          newMessage,
+          currentChain,
+          false
+        );
+
+        if (!success) {
+          new Notice("Failed to edit message. Please try again.");
+          return;
+        }
+
+        // For user messages, immediately truncate any AI responses and regenerate
+        if (messageToEdit.sender === USER_SENDER) {
+          // Check if there were AI responses after this message
+          const hadAIResponses = messageIndex < chatHistory.length - 1;
+
+          // Truncate all messages after this user message (removes old AI responses)
+          await chatUIState.truncateAfterMessageId(messageToEdit.id!);
+
+          // If there were AI responses, generate new ones
+          if (hadAIResponses) {
+            streamingMessageIdRef.current = `msg-${uuidv4()}`;
+            safeSet.setLoading(true);
+            try {
+              const llmMessage = chatUIState.getLLMMessage(messageToEdit.id!);
+              if (llmMessage) {
+                await getAIResponse(
+                  llmMessage,
+                  chainManager,
+                  addMessage,
+                  safeSet.setCurrentAiMessage,
+                  setAbortController,
+                  { debug: settings.debug, updateLoadingMessage: safeSet.setLoadingMessage }
+                );
+              }
+            } catch (error) {
+              logError("Error regenerating AI response:", error);
+              new Notice("Failed to regenerate AI response. Please try again.");
+            } finally {
+              safeSet.setLoading(false);
+              streamingMessageIdRef.current = null;
+            }
+          }
+        }
+
+        // Autosave the chat if the setting is enabled
+        if (settings.autosaveChat) {
+          await handleSaveAsNote();
+        }
+      } catch (error) {
+        logError("Error editing message:", error);
+        new Notice("Failed to edit message. Please try again.");
+      }
+    },
+    [
+      chatHistory,
+      chatUIState,
+      currentChain,
+      addMessage,
+      chainManager,
+      settings.debug,
+      settings.autosaveChat,
+      handleSaveAsNote,
+      safeSet,
+      setAbortController,
+    ]
+  );
+
+  // Expose handleSaveAsNote to parent
+  useEffect(() => {
+    if (onSaveChat) {
+      onSaveChat(handleSaveAsNote);
+    }
+  }, [onSaveChat, handleSaveAsNote]);
+
+  const handleRemoveSelectedText = useCallback(
+    (id: string) => {
+      // Get fresh state to avoid stale closure issues (fixes race condition on rapid removals)
+      const currentContexts = getSelectedTextContexts();
+      const removed = currentContexts.find((ctx) => ctx.id === id);
+      removeSelectedTextContext(id);
+
+      // Suppress web selection to prevent it from being auto-captured again
+      if (removed?.sourceType === "web") {
+        plugin.suppressCurrentWebSelection(removed.url);
+      }
+      // Note: highlight cleanup is now handled by the useEffect below that watches selectedTextContexts
+    },
+    [plugin]
+  );
+
+  /**
+   * State-driven highlight cleanup: automatically clear editor highlight
+   * when no note contexts remain. This ensures highlight stays in sync
+   * with context state regardless of how contexts are modified.
+   */
+  useEffect(() => {
+    plugin.chatSelectionHighlightController.clearIfNoNoteContexts(selectedTextContexts);
+  }, [selectedTextContexts, plugin]);
+
+  useEffect(() => {
+    const handleChatVisibility = () => {
+      chatInput.focusInput();
+    };
+    eventTarget?.addEventListener(EVENT_NAMES.CHAT_IS_VISIBLE, handleChatVisibility);
+
+    // Cleanup function
+    return () => {
+      eventTarget?.removeEventListener(EVENT_NAMES.CHAT_IS_VISIBLE, handleChatVisibility);
+    };
+  }, [eventTarget, chatInput]);
+
+  // Insert text routed from outside the chat (e.g. the Relevant Notes pane's
+  // "Add to Chat") into this chat's input. The bus latches text queued before
+  // this listener attaches, so a freshly-opened view still receives it on mount.
+  useEffect(() => {
+    const bus = eventTarget instanceof ChatViewEventTarget ? eventTarget : null;
+    const handleInsertText = (e: Event) => {
+      bus?.consumePendingInsertText();
+      const text = (e as CustomEvent<{ text?: string }>).detail?.text;
+      if (typeof text === "string") chatInput.insertTextWithPills(text, true);
+    };
+    eventTarget?.addEventListener(EVENT_NAMES.INSERT_TEXT_TO_CHAT, handleInsertText);
+    const pending = bus?.consumePendingInsertText();
+    if (typeof pending === "string") chatInput.insertTextWithPills(pending, true);
+    return () => {
+      eventTarget?.removeEventListener(EVENT_NAMES.INSERT_TEXT_TO_CHAT, handleInsertText);
+    };
+  }, [eventTarget, chatInput]);
+
+  const handleDelete = useCallback(
+    async (messageIndex: number) => {
+      const messageToDelete = chatHistory[messageIndex];
+      if (!messageToDelete) {
+        new Notice("Message not found.");
+        return;
+      }
+
+      try {
+        const success = await chatUIState.deleteMessage(messageToDelete.id!);
+        if (!success) {
+          new Notice("Failed to delete message. Please try again.");
+        }
+      } catch (error) {
+        logError("Error deleting message:", error);
+        new Notice("Failed to delete message. Please try again.");
+      }
+    },
+    [chatHistory, chatUIState]
+  );
+
+  const handleNewChat = useCallback(async () => {
+    clearRecordedPromptPayload();
+    await logFileManager.clear();
+    handleStopGenerating(ABORT_REASON.NEW_CHAT);
+
+    // Analyze chat messages for memory if enabled
+    if (settings.enableRecentConversations) {
+      try {
+        // Get the current chat model from the chain manager
+        const chatModel = chainManager.chatModelManager.getChatModel();
+        plugin.userMemoryManager.addRecentConversation(chatUIState.getMessages(), chatModel);
+      } catch (error) {
+        logInfo("Failed to analyze chat messages for memory:", error);
+      }
+    }
+
+    // First autosave the current chat if the setting is enabled
+    if (settings.autosaveChat) {
+      await handleSaveAsNote();
+    }
+
+    // Clear messages through the new architecture
+    chatUIState.clearMessages();
+
+    // Reset all session-level system prompt settings to global defaults
+    resetSessionSystemPromptSettings();
+
+    // Additional UI state reset specific to this component
+    safeSet.setCurrentAiMessage("");
+    setContextNotes([]);
+    // Capture web selection URL before clearing for suppression
+    const webSelectionUrl = selectedTextContexts.find((ctx) => ctx.sourceType === "web")?.url;
+    clearSelectedTextContexts();
+    // Clear chat selection highlight
+    plugin.chatSelectionHighlightController.clearForNewChat();
+    // Suppress web selection to prevent it from reappearing in new chat
+    plugin.suppressCurrentWebSelection(webSelectionUrl);
+    setIncludeActiveNote(settings.autoAddActiveContentToContext);
+    setIncludeActiveWebTab(settings.autoAddActiveContentToContext);
+  }, [
+    handleStopGenerating,
+    chainManager.chatModelManager,
+    chatUIState,
+    settings.autosaveChat,
+    settings.enableRecentConversations,
+    settings.autoAddActiveContentToContext,
+    handleSaveAsNote,
+    safeSet,
+    plugin,
+    selectedTextContexts,
+  ]);
+
+  const handleLoadChatHistory = useCallback(async () => {
+    try {
+      const historyItems = await plugin.getChatHistoryItems();
+      setChatHistoryItems(historyItems);
+    } catch (error) {
+      logError("Error loading chat history:", error);
+      new Notice("Failed to load chat history.");
+    }
+  }, [plugin]);
+
+  const handleUpdateChatTitle = useCallback(
+    async (id: string, newTitle: string) => {
+      try {
+        await plugin.updateChatTitle(id, newTitle);
+        await handleLoadChatHistory(); // Refresh the list
+      } catch (error) {
+        logError("Error updating chat title:", error);
+        new Notice("Failed to update chat title.");
+        throw error; // Re-throw to let the popover handle the error state
+      }
+    },
+    [plugin, handleLoadChatHistory]
+  );
+
+  const handleDeleteChat = useCallback(
+    async (id: string) => {
+      try {
+        await plugin.deleteChatHistory(id);
+        await handleLoadChatHistory(); // Refresh the list
+      } catch (error) {
+        logError("Error deleting chat:", error);
+        new Notice("Failed to delete chat.");
+        throw error; // Re-throw to let the popover handle the error state
+      }
+    },
+    [plugin, handleLoadChatHistory]
+  );
+
+  const handleLoadChat = useCallback(
+    async (id: string) => {
+      try {
+        await plugin.loadChatById(id);
+        // Reset all session-level system prompt settings to global defaults when loading a chat
+        resetSessionSystemPromptSettings();
+      } catch (error) {
+        logError("Error loading chat:", error);
+        new Notice("Failed to load chat.");
+      }
+    },
+    [plugin]
+  );
+
+  const handleOpenSourceFile = useCallback(
+    async (id: string) => {
+      try {
+        await plugin.openChatSourceFile(id);
+      } catch (error) {
+        logError("Error opening source file:", error);
+        new Notice("Failed to open source file.");
+      }
+    },
+    [plugin]
+  );
+
+  // Event listener for abort stream events
+  useEffect(() => {
+    const handleAbortStream = (event: CustomEvent<{ reason?: ABORT_REASON }>) => {
+      const reason = event.detail?.reason || ABORT_REASON.NEW_CHAT;
+      handleStopGenerating(reason);
+    };
+
+    eventTarget?.addEventListener(EVENT_NAMES.ABORT_STREAM, handleAbortStream);
+
+    // Cleanup function
+    return () => {
+      eventTarget?.removeEventListener(EVENT_NAMES.ABORT_STREAM, handleAbortStream);
+    };
+  }, [eventTarget, handleStopGenerating]);
+
+  const [prevAutoAddTuple, setPrevAutoAddTuple] = useState({
+    autoAdd: settings.autoAddActiveContentToContext,
+    chain: selectedChain,
+  });
+  if (
+    prevAutoAddTuple.autoAdd !== settings.autoAddActiveContentToContext ||
+    prevAutoAddTuple.chain !== selectedChain
+  ) {
+    setPrevAutoAddTuple({
+      autoAdd: settings.autoAddActiveContentToContext,
+      chain: selectedChain,
+    });
+    if (settings.autoAddActiveContentToContext !== undefined) {
+      setIncludeActiveNote(settings.autoAddActiveContentToContext);
+      setIncludeActiveWebTab(settings.autoAddActiveContentToContext);
+    }
+  }
+
+  // Note: pendingMessages loading has been removed as ChatManager now handles
+  // message persistence and loading automatically based on project context
+
+  const renderChatComponents = () => (
+    <>
+      <div className="tw-flex tw-size-full tw-flex-col tw-overflow-hidden">
+        {isChatEmpty(chatHistory, currentAiMessage) && (
+          <div className="tw-mx-auto tw-flex tw-w-full tw-max-w-lg tw-flex-1 tw-items-center tw-px-4">
+            <AgentModeBanner onOpenAgent={safeAsyncHandler(() => plugin.activateAgentView())} />
+          </div>
+        )}
+        <ChatMessages
+          sourcePath={sourcePath}
+          chatHistory={chatHistory}
+          currentAiMessage={currentAiMessage}
+          streamingMessageId={streamingMessageIdRef.current}
+          loading={loading}
+          loadingMessage={loadingMessage}
+          app={app}
+          onRegenerate={safeAsyncHandler(handleRegenerate)}
+          onEdit={safeAsyncHandler(handleEdit)}
+          onDelete={safeAsyncHandler(handleDelete)}
+        />
+        <ChatControls
+          onNewChat={() => void handleNewChat()}
+          onSaveAsNote={() => handleSaveAsNote()}
+          onLoadHistory={() => void handleLoadChatHistory()}
+          chatHistory={chatHistoryItems}
+          onUpdateChatTitle={handleUpdateChatTitle}
+          onDeleteChat={handleDeleteChat}
+          onLoadChat={handleLoadChat}
+          onOpenSourceFile={handleOpenSourceFile}
+          latestTokenCount={latestTokenCount}
+        />
+        <ChatInput
+          inputMessage={inputMessage}
+          setInputMessage={setInputMessage}
+          handleSendMessage={safeAsyncHandler(handleSendMessage)}
+          isGenerating={loading}
+          onStopGenerating={() => handleStopGenerating(ABORT_REASON.USER_STOPPED)}
+          app={app}
+          contextNotes={contextNotes}
+          setContextNotes={setContextNotes}
+          includeActiveNote={includeActiveNote}
+          setIncludeActiveNote={setIncludeActiveNote}
+          includeActiveWebTab={includeActiveWebTab}
+          setIncludeActiveWebTab={setIncludeActiveWebTab}
+          activeWebTab={currentActiveWebTab}
+          selectedImages={selectedImages}
+          onAddImage={handleAddImage}
+          setSelectedImages={setSelectedImages}
+          modelPickerOverride={chatModelPicker}
+          selectedTextContexts={selectedTextContexts}
+          onRemoveSelectedText={handleRemoveSelectedText}
+        />
+      </div>
+    </>
+  );
+
+  return (
+    <div
+      ref={chatContainerRef}
+      onPointerDownCapture={handleChatPointerDownCapture}
+      className="tw-flex tw-size-full tw-flex-col tw-overflow-hidden"
+    >
+      <div className="tw-h-full">
+        <div className="tw-relative tw-flex tw-h-full tw-flex-col">
+          {isDragActive && (
+            <div className="tw-absolute tw-inset-0 tw-z-modal tw-flex tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-dashed tw-bg-primary tw-opacity-80">
+              <span>Drop files here...</span>
+            </div>
+          )}
+          {renderChatComponents()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main Chat component with context provider
+const Chat: React.FC<ChatProps> = (props) => {
+  return (
+    <ChatInputProvider>
+      <ChatWithContext {...props} />
+    </ChatInputProvider>
+  );
+};
+
+// Chat component that uses context
+const ChatWithContext: React.FC<ChatProps> = (props) => {
+  const chatInput = useChatInput();
+  return <ChatInternal {...props} chatInput={chatInput} />;
+};
+
+export default Chat;

@@ -1,5 +1,5 @@
 import React from "react";
-import type { CustomModel } from "@/aiParams";
+import type { CustomModel } from "@/ai-params";
 import { getProviderLabel } from "@/lib/model-display-utils";
 import { EyeOff } from "lucide-react";
 import { ModelCapability } from "@/constants";

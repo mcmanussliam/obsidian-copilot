@@ -5,11 +5,11 @@ import {
   getPromptFilePathInFolder,
   getSystemPromptsFolder,
   loadAllSystemPrompts,
-} from "@/system-prompts/systemPromptUtils";
+} from "@/system-prompts/system-prompt-utils";
 import { UserSystemPrompt } from "@/system-prompts/type";
 import { logError, logInfo, logWarn } from "@/logger";
 import { getSettings, updateSetting } from "@/settings/model";
-import type { StartupMigrationItem } from "@/services/startupMigration";
+import type { StartupMigrationItem } from "@/services/startup-migration";
 import { ensureFolderExists, stripFrontmatter } from "@/utils";
 
 /**

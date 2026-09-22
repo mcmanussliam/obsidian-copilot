@@ -1,33 +1,33 @@
 import { registerCommands } from "@/commands";
 import { COMMAND_ICONS, COMMAND_IDS, COMMAND_NAMES } from "@/constants";
 import type CopilotPlugin from "@/main";
-import { MiyoRequestError } from "@/miyo/MiyoClient";
+import { MiyoRequestError } from "@/miyo/miyo-client";
 import { getSettings } from "@/settings/model";
-import { isDesktopRuntime } from "@/utils/desktopRuntime";
+import { isDesktopRuntime } from "@/utils/desktop-runtime";
 import { waitFor } from "@testing-library/react";
 import { Notice, TFile, type Command } from "obsidian";
 
 const mockRequestMiyoIndexRefresh = jest.fn();
 
-jest.mock("@/commands/CustomCommandChatModal", () => ({
+jest.mock("@/commands/custom-command-chat-modal", () => ({
   CustomCommandChatModal: jest.fn(),
 }));
-jest.mock("@/utils/desktopRuntime", () => ({
+jest.mock("@/utils/desktop-runtime", () => ({
   isDesktopRuntime: jest.fn(() => false),
 }));
 jest.mock("@/settings/model", () => ({
   ...jest.requireActual<typeof import("@/settings/model")>("@/settings/model"),
   getSettings: jest.fn(),
 }));
-jest.mock("@/miyo/miyoUtils", () => ({
+jest.mock("@/miyo/miyo-utils", () => ({
   getMiyoCustomUrl: jest.fn((settings: { miyoServerUrl?: string }) => settings.miyoServerUrl ?? ""),
 }));
-jest.mock("@/miyo/miyoIndex", () => ({
+jest.mock("@/miyo/miyo-index", () => ({
   requestMiyoIndexRefresh: async (app: unknown): Promise<void> => {
     await mockRequestMiyoIndexRefresh(app);
   },
 }));
-jest.mock("@/miyo/MiyoClient", () => {
+jest.mock("@/miyo/miyo-client", () => {
   class MockMiyoRequestError extends Error {
     public constructor(
       public readonly status: number,

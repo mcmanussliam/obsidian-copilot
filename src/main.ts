@@ -1,26 +1,26 @@
-import { startReleaseUpdateCheck } from "@/services/releaseUpdateNotice";
-import { releaseCursorAssociation } from "@/editor/releaseCursorAssociation";
-import type { AgentSessionManager, SkillManager } from "@/agentMode";
+import { startReleaseUpdateCheck } from "@/services/release-update-notice";
+import { releaseCursorAssociation } from "@/editor/release-cursor-association";
+import type { AgentSessionManager, SkillManager } from "@/agent-mode";
 // Deep import (not the barrel): these run on the load path for every
 // platform, and the barrel pulls Node-only modules that crash mobile.
-import { isNativeChatId, parseNativeChatId } from "@/utils/nativeChatId";
-import { BrevilabsClient } from "@/LLMProviders/brevilabsClient";
-import ChainOwner from "@/LLMProviders/chainOwner";
-import { CustomModel, setSelectedTextContexts, getSelectedTextContexts } from "@/aiParams";
+import { isNativeChatId, parseNativeChatId } from "@/utils/native-chat-id";
+import { BrevilabsClient } from "@/llm-providers/brevilabs-client";
+import ChainOwner from "@/llm-providers/chain-owner";
+import { CustomModel, setSelectedTextContexts, getSelectedTextContexts } from "@/ai-params";
 import { NoteSelectedTextContext, SelectedTextContext } from "@/types/message";
 import { registerCommands } from "@/commands";
-import CopilotView from "@/components/CopilotView";
-import RelevantNotesView from "@/components/RelevantNotesView";
-import { APPLY_VIEW_TYPE, ApplyView } from "@/components/composer/ApplyView";
-import { ConfirmModal } from "@/components/modals/ConfirmModal";
-import { LoadChatHistoryModal } from "@/components/modals/LoadChatHistoryModal";
+import CopilotView from "@/components/copilot-view";
+import RelevantNotesView from "@/components/relevant-notes-view";
+import { APPLY_VIEW_TYPE, ApplyView } from "@/components/composer/apply-view";
+import { ConfirmModal } from "@/components/modals/confirm-modal";
+import { LoadChatHistoryModal } from "@/components/modals/load-chat-history-modal";
 
-import { registerContextMenu } from "@/commands/contextMenu";
-import { CustomCommandRegister } from "@/commands/customCommandRegister";
+import { registerContextMenu } from "@/commands/context-menu";
+import { CustomCommandRegister } from "@/commands/custom-command-register";
 import { migrateCommands } from "@/commands/migrator";
 import { migrateSystemPromptsFromSettings } from "@/system-prompts/migration";
-import { SystemPromptRegister } from "@/system-prompts/systemPromptRegister";
-import { ProjectRegister } from "@/projects/projectRegister";
+import { SystemPromptRegister } from "@/system-prompts/system-prompt-register";
+import { ProjectRegister } from "@/projects/project-register";
 import {
   ABORT_REASON,
   AGENT_CHAT_MODE,
@@ -32,42 +32,42 @@ import {
   EVENT_NAMES,
   RELEVANT_NOTES_VIEWTYPE,
 } from "@/constants";
-import { ChatManager } from "@/core/ChatManager";
-import { MessageRepository } from "@/core/MessageRepository";
+import { ChatManager } from "@/core/chat-manager";
+import { MessageRepository } from "@/core/message-repository";
 import { logError, logInfo, logWarn } from "@/logger";
-import { logFileManager } from "@/logFileManager";
+import { logFileManager } from "@/log-file-manager";
 import {
   createModelManagement,
   plusSyncNeeded,
   syncCopilotPlusProvider,
   type ModelManagementApi,
-} from "@/modelManagement";
-import { KeychainService } from "@/services/keychainService";
-import { backupLegacyCredentials } from "@/services/legacyCredentialBackup";
+} from "@/model-management";
+import { KeychainService } from "@/services/keychain-service";
+import { backupLegacyCredentials } from "@/services/legacy-credential-backup";
 import {
   persistSettings,
   loadSettingsWithKeychain,
   flushPersistence,
   resetPersistenceState,
-} from "@/services/settingsPersistence";
-import { UserMemoryManager } from "@/memory/UserMemoryManager";
-import { clearRecordedPromptPayload } from "@/LLMProviders/chainRunner/utils/promptPayloadRecorder";
+} from "@/services/settings-persistence";
+import { UserMemoryManager } from "@/memory/user-memory-manager";
+import { clearRecordedPromptPayload } from "@/llm-providers/chain-runner/utils/prompt-payload-recorder";
 import {
   checkIsPaidUser,
   ENTITLEMENT_REFRESH_INTERVAL_MS,
   verifyCachedEntitlement,
-} from "@/plusUtils";
+} from "@/plus-utils";
 import {
   getWebViewerService,
   startActiveWebTabTracking,
-} from "@/services/webViewerService/webViewerServiceSingleton";
-import { WebSelectionTracker } from "@/services/webViewerService/webViewerServiceSelection";
+} from "@/services/web-viewer-service/web-viewer-service-singleton";
+import { WebSelectionTracker } from "@/services/web-viewer-service/web-viewer-service-selection";
 import { runSettingsMigrations } from "@/settings/migrations";
 import {
   cleanupLegacyIndexArtifacts,
   LEGACY_INDEX_CLEANUP_STORAGE_KEY,
-} from "@/settings/migrations/legacyIndexRemovalMigration";
-import { CopilotSettingTab } from "@/settings/SettingsPage";
+} from "@/settings/migrations/legacy-index-removal-migration";
+import { CopilotSettingTab } from "@/settings/settings-page";
 import {
   type CopilotSettings,
   getModelKeyFromModel,
@@ -76,19 +76,22 @@ import {
   subscribeToSettingsChange,
   updateSetting,
 } from "@/settings/model";
-import { ensureCopilotSubfolders, getEffectiveConversationsFolder } from "@/settings/copilotFolder";
-import { buildUpgradeRelocationEntries } from "@/settings/upgradeNotice";
-import { dehydrateDeviceProfile, hydrateDeviceProfile } from "@/settings/deviceProfiles";
-import { getDeviceId } from "@/utils/deviceId";
-import { isDesktopRuntime } from "@/utils/desktopRuntime";
-import { disposeNotificationSound } from "@/utils/notificationSound";
-import { installRendererEventsShim } from "@/utils/rendererEventsShim";
-import { ContextProcessor } from "@/contextProcessor";
-import { CustomCommandManager } from "@/commands/customCommandManager";
-import { ChatManagerChatUIState } from "@/state/ChatUIState";
-import { VaultDataManager } from "@/state/vaultDataAtoms";
-import { FileParserManager } from "@/tools/FileParserManager";
-import { initializeBuiltinTools } from "@/tools/builtinTools";
+import {
+  ensureCopilotSubfolders,
+  getEffectiveConversationsFolder,
+} from "@/settings/copilot-folder";
+import { buildUpgradeRelocationEntries } from "@/settings/upgrade-notice";
+import { dehydrateDeviceProfile, hydrateDeviceProfile } from "@/settings/device-profiles";
+import { getDeviceId } from "@/utils/device-id";
+import { isDesktopRuntime } from "@/utils/desktop-runtime";
+import { disposeNotificationSound } from "@/utils/notification-sound";
+import { installRendererEventsShim } from "@/utils/renderer-events-shim";
+import { ContextProcessor } from "@/context-processor";
+import { CustomCommandManager } from "@/commands/custom-command-manager";
+import { ChatManagerChatUIState } from "@/state/chat-ui-state";
+import { VaultDataManager } from "@/state/vault-data-atoms";
+import { FileParserManager } from "@/tools/file-parser-manager";
+import { initializeBuiltinTools } from "@/tools/builtin-tools";
 import {
   ChatSelectionHighlightController,
   hideChatSelectionHighlight,
@@ -114,28 +117,28 @@ import {
   shouldClearFolderRelocation,
   type StartupMigrationItem,
   type StartupMigrationTask,
-} from "@/services/startupMigration";
-import { ChatHistoryItem } from "@/components/chat-components/ChatHistoryPopover";
+} from "@/services/startup-migration";
+import { ChatHistoryItem } from "@/components/chat-components/chat-history-popover";
 import {
   extractChatLastAccessedAtMs,
   fileToHistoryItem,
   filterChatHistoryFiles,
-} from "@/utils/chatHistoryUtils";
-import { RecentUsageManager } from "@/utils/recentUsageManager";
+} from "@/utils/chat-history-utils";
+import { RecentUsageManager } from "@/utils/recent-usage-manager";
 import {
   listMarkdownFiles,
   patchFrontmatter,
   readFrontmatterViaAdapter,
   resolveFileByPath,
   trashFile,
-} from "@/utils/vaultAdapterUtils";
+} from "@/utils/vault-adapter-utils";
 import { v4 as uuidv4 } from "uuid";
-import { OpenArtifactsPublisher } from "@/openArtifacts/OpenArtifactsPublisher";
-import { migrateOpenArtifactsFolder } from "@/openArtifacts/openArtifactsLedger";
+import { OpenArtifactsPublisher } from "@/open-artifacts/open-artifacts-publisher";
+import { migrateOpenArtifactsFolder } from "@/open-artifacts/open-artifacts-ledger";
 import {
   createSelfHostWebSearchAgentBridge,
   type SelfHostWebSearchAgentBridge,
-} from "@/LLMProviders/selfHostServices";
+} from "@/llm-providers/self-host-services";
 
 // Removed unused FileTrackingState interface
 
@@ -152,9 +155,9 @@ export default class CopilotPlugin extends Plugin {
   chatUIState: ChatManagerChatUIState;
   agentSessionManager?: AgentSessionManager;
   skills?: SkillManager;
-  private CopilotAgentView?: typeof import("@/agentMode").CopilotAgentView;
-  private PlanPreviewView?: typeof import("@/agentMode").PlanPreviewView;
-  private planPreviewViewType?: typeof import("@/agentMode").PLAN_PREVIEW_VIEW_TYPE;
+  private CopilotAgentView?: typeof import("@/agent-mode/index").CopilotAgentView;
+  private PlanPreviewView?: typeof import("@/agent-mode/index").PlanPreviewView;
+  private planPreviewViewType?: typeof import("@/agent-mode/index").PLAN_PREVIEW_VIEW_TYPE;
   private agentModelDiscoveryUnsubscriber?: () => void;
   modelManagement!: ModelManagementApi;
   /** Provider-credential-free channel available to the managed Agent Chat search skill. */
@@ -328,7 +331,7 @@ export default class CopilotPlugin extends Plugin {
     // Initialize Agent Mode coordinator (desktop only — ACP needs subprocess
     // support). Gate on `isDesktopRuntime()`, not `Platform.isDesktopApp`:
     // under `app.emulateMobile(true)` the latter stays true while Node is stubbed,
-    // so importing the `@/agentMode` barrel there would crash the plugin at load.
+    // so importing the `@/agent-mode` barrel there would crash the plugin at load.
     if (isDesktopRuntime()) {
       const {
         CopilotAgentView,
@@ -338,8 +341,8 @@ export default class CopilotPlugin extends Plugin {
         createAgentSessionManager,
         setFrameSinkVaultBasePath,
         SkillManager,
-      } = await import("@/agentMode");
-      const { wireAgentModelDiscovery } = await import("@/agentMode/agentModelDiscovery");
+      } = await import("@/agent-mode");
+      const { wireAgentModelDiscovery } = await import("@/agent-mode/agent-model-discovery");
       this.CopilotAgentView = CopilotAgentView;
       this.PlanPreviewView = PlanPreviewView;
       this.planPreviewViewType = PLAN_PREVIEW_VIEW_TYPE;
@@ -690,10 +693,10 @@ export default class CopilotPlugin extends Plugin {
     this.settingsUnsubscriber?.();
 
     // Tear down skills vault watchers + debounce timers. Gate matches onload so
-    // we never import the `@/agentMode` barrel on a Node-less runtime (mobile /
+    // we never import the `@/agent-mode` barrel on a Node-less runtime (mobile /
     // emulateMobile), which would crash during unload.
     if (isDesktopRuntime()) {
-      const { SkillManager } = await import("@/agentMode");
+      const { SkillManager } = await import("@/agent-mode");
       if (SkillManager.hasInstance()) {
         SkillManager.getInstance().dispose();
       }

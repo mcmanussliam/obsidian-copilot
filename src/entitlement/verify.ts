@@ -1,4 +1,4 @@
-import { ENTITLEMENT_PUBLIC_KEYS } from "./publicKeys";
+import { ENTITLEMENT_PUBLIC_KEYS } from "./public-keys";
 import type { EntitlementClaims } from "./types";
 
 export interface VerifyEntitlementOptions {

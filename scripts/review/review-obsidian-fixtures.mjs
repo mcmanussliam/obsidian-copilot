@@ -8,7 +8,7 @@ import {
   getManifestFilename,
   lintRuntimeDependencies,
   validateSelectedManifest,
-} from "./review-obsidian-package.mjs";
+} from "./review-obsidian-package";
 
 const repositoryRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const reviewSourceRoots = ["src", "dev/gallery"];

@@ -39,9 +39,9 @@ jobs:
       - if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: npm ci
       - name: Test native PowerShell publishing wrapper
-        run: npm test -- --runInBand tests/unit/agentMode/skills/builtin/openArtifactsPublishWrappers.test.ts
+        run: npm test -- --runInBand tests/unit/agent-mode/skills/builtin/open-artifacts-publish-wrappers.test.ts
       - name: Verify sanitization without regexp optimization
-        run: node --no-regexp-optimization node_modules/jest/bin/jest.js --runInBand --runTestsByPath tests/unit/openArtifacts/openArtifactsDocument.test.ts tests/unit/utils/redactLog.test.ts
+        run: node --no-regexp-optimization node_modules/jest/bin/jest.js --runInBand --runTestsByPath tests/unit/open-artifacts/open-artifacts-document.test.ts tests/unit/utils/redact-log.test.ts
   test-windows:
     name: test-windows (shard ${{ matrix.shard }}/4)
     runs-on: windows-latest

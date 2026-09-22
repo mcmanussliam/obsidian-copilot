@@ -1,4 +1,4 @@
-import { ProjectConfig } from "@/aiParams";
+import { ProjectConfig } from "@/ai-params";
 
 /**
  * A parsed project config record (`project.md`, the single source of truth).

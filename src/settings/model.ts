@@ -1,21 +1,27 @@
-import { CustomModel, ProjectConfig } from "@/aiParams";
-import { ALL_MANAGED_SKILLS } from "@/builtinSkills/builtinSkills";
+import { CustomModel, ProjectConfig } from "@/ai-params";
+import { ALL_MANAGED_SKILLS } from "@/builtin-skills/builtin-skills";
 import { getModelKeyFromModel } from "@/lib/model-key";
 import { atom, createStore, useAtomValue } from "jotai";
 import { v4 as uuidv4 } from "uuid";
 
-import type { CopilotMode, ModelSelection } from "@/agentMode";
-import { ChainType } from "@/chainType";
+import type { CopilotMode, ModelSelection } from "@/agent-mode";
+import { ChainType } from "@/chain-type";
 import type {
   BackendConfig,
   BackendType,
   ConfiguredModel,
   PersistedCopilotPlusCatalog,
   Provider,
-} from "@/modelManagement";
-import { MODEL_SECRET_FIELDS, TOP_LEVEL_SECRET_FIELDS } from "@/services/settingsSecretTransforms";
-import { isNotificationSoundId, type NotificationSoundId } from "@/utils/notificationSoundCatalog";
-import { type SortStrategy, isSortStrategy } from "@/utils/recentUsageManager";
+} from "@/model-management";
+import {
+  MODEL_SECRET_FIELDS,
+  TOP_LEVEL_SECRET_FIELDS,
+} from "@/services/settings-secret-transforms";
+import {
+  isNotificationSoundId,
+  type NotificationSoundId,
+} from "@/utils/notification-sound-catalog";
+import { type SortStrategy, isSortStrategy } from "@/utils/recent-usage-manager";
 import {
   BUILTIN_CHAT_MODELS,
   DEFAULT_OPEN_AREA,
@@ -265,7 +271,7 @@ export interface CopilotSettings {
      * fields in memory: `hydrateDeviceProfile` populates the flat fields from
      * this device's segment on load; `dehydrateDeviceProfile` moves them back
      * here and strips the flat fields on save. Other devices' segments are
-     * preserved untouched. See `src/settings/deviceProfiles.ts`.
+     * preserved untouched. See `src/settings/device-profiles.ts`.
      */
     deviceProfiles?: Record<string, DeviceAgentProfile>;
     /**
@@ -278,7 +284,7 @@ export interface CopilotSettings {
     /**
      * Write the full untruncated ACP JSON-RPC frames as NDJSON to a per-vault
      * owner-only directory under the OS temp folder (see
-     * `getFrameLogPaths()` in `src/agentMode/session/debugSink.ts`). On by
+     * `getFrameLogPaths()` in `src/agent-mode/session/debug-sink.ts`). On by
      * default; leaves the existing 400-char summary log unchanged.
      */
     debugFullFrames: boolean;

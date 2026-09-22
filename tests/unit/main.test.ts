@@ -10,7 +10,7 @@ jest.mock("obsidian", () => {
     PluginSettingTab: class PluginSettingTab {},
   };
 });
-jest.mock("@/LLMProviders/chatModelManager", () => ({
+jest.mock("@/llm-providers/chat-model-manager", () => ({
   __esModule: true,
   default: { getInstance: jest.fn() },
 }));
@@ -20,27 +20,27 @@ jest.mock("@/logger", () => ({
   logInfo: jest.fn(),
   logWarn: jest.fn(),
 }));
-jest.mock("@/services/settingsPersistence", () => ({
+jest.mock("@/services/settings-persistence", () => ({
   flushPersistence: jest.fn().mockResolvedValue(undefined),
   persistSettings: jest.fn(),
   loadSettingsWithKeychain: jest.fn(),
   resetPersistenceState: jest.fn(),
 }));
-jest.mock("@/logFileManager", () => ({
+jest.mock("@/log-file-manager", () => ({
   logFileManager: { flush: jest.fn().mockResolvedValue(undefined) },
 }));
-jest.mock("@/state/vaultDataAtoms", () => ({
+jest.mock("@/state/vault-data-atoms", () => ({
   VaultDataManager: { getInstance: jest.fn(() => ({ cleanup: jest.fn() })) },
 }));
-jest.mock("@/services/webViewerService/webViewerServiceSingleton", () => ({
+jest.mock("@/services/web-viewer-service/web-viewer-service-singleton", () => ({
   getWebViewerService: jest.fn(() => ({ stopActiveWebTabTracking: jest.fn() })),
   startActiveWebTabTracking: jest.fn(),
 }));
-jest.mock("@/utils/desktopRuntime", () => ({ isDesktopRuntime: jest.fn(() => false) }));
-jest.mock("@/utils/notificationSound", () => ({ disposeNotificationSound: jest.fn() }));
+jest.mock("@/utils/desktop-runtime", () => ({ isDesktopRuntime: jest.fn(() => false) }));
+jest.mock("@/utils/notification-sound", () => ({ disposeNotificationSound: jest.fn() }));
 const mockSkillManagerDispose = jest.fn();
 const mockSkillManagerHasInstance = jest.fn(() => true);
-jest.mock("@/agentMode", () => ({
+jest.mock("@/agent-mode", () => ({
   SkillManager: {
     hasInstance: () => mockSkillManagerHasInstance(),
     getInstance: () => ({ dispose: mockSkillManagerDispose }),
@@ -48,14 +48,14 @@ jest.mock("@/agentMode", () => ({
 }));
 
 import CopilotPlugin from "@/main";
-import { getSelectedTextContexts, setSelectedTextContexts } from "@/aiParams";
+import { getSelectedTextContexts, setSelectedTextContexts } from "@/ai-params";
 import { DEFAULT_SETTINGS } from "@/constants";
 import { settingsAtom, settingsStore } from "@/settings/model";
-import type { WebSelectionTrackingOptions } from "@/services/webViewerService/webViewerServiceSelection";
+import type { WebSelectionTrackingOptions } from "@/services/web-viewer-service/web-viewer-service-selection";
 
 const mockStartSelectionTracker = jest.fn();
 const mockSelectionTrackerOptions = jest.fn();
-jest.mock("@/services/webViewerService/webViewerServiceSelection", () => ({
+jest.mock("@/services/web-viewer-service/web-viewer-service-selection", () => ({
   WebSelectionTracker: class {
     constructor(options: WebSelectionTrackingOptions) {
       mockSelectionTrackerOptions(options);
@@ -64,10 +64,10 @@ jest.mock("@/services/webViewerService/webViewerServiceSelection", () => ({
   },
 }));
 import { logError, logInfo, logWarn } from "@/logger";
-import { logFileManager } from "@/logFileManager";
-import { flushPersistence } from "@/services/settingsPersistence";
-import { isDesktopRuntime } from "@/utils/desktopRuntime";
-import { disposeNotificationSound } from "@/utils/notificationSound";
+import { logFileManager } from "@/log-file-manager";
+import { flushPersistence } from "@/services/settings-persistence";
+import { isDesktopRuntime } from "@/utils/desktop-runtime";
+import { disposeNotificationSound } from "@/utils/notification-sound";
 
 /**
  * Build a plugin instance without running Obsidian's `Plugin` constructor or

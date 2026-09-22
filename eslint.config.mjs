@@ -7,7 +7,7 @@ import globals from "globals";
 import { isBuiltin } from "node:module";
 
 const NODE_IMPORT_GUIDANCE =
-  "Use requireNodeModule() from '@/utils/desktopRuntime' for runtime access; use an import(\"node:...\") type query when only a type is needed.";
+  "Use requireNodeModule() from '@/utils/desktop-runtime' for runtime access; use an import(\"node:...\") type query when only a type is needed.";
 
 const noDirectNodeImportsRule = {
   meta: {
@@ -107,7 +107,7 @@ const restrictedSourceImports = [
     selector:
       "ImportDeclaration[source.value='react-dom/client'] ImportSpecifier[imported.name='createRoot']",
     message:
-      "Use createPluginRoot from '@/utils/react/createPluginRoot' instead. It wraps the root in <AppContext.Provider> so descendants can rely on useApp() unconditionally (see PR #2466).",
+      "Use createPluginRoot from '@/utils/react/create-plugin-root' instead. It wraps the root in <AppContext.Provider> so descendants can rely on useApp() unconditionally (see PR #2466).",
   },
 ];
 
@@ -335,11 +335,11 @@ export default [
   // matching blocks, so splitting them would silently disable the earlier
   // ban on every file the later block also matches.
   //
-  // `createPluginRoot.tsx` is exempted via `ignores` — it owns `createRoot`,
+  // `create-plugin-root.tsx` is exempted via `ignores` — it owns `createRoot`,
   // and has no parent imports today.
   {
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/utils/react/createPluginRoot.tsx"],
+    ignores: ["src/utils/react/create-plugin-root.tsx"],
     rules: {
       "no-restricted-syntax": [
         "error",
@@ -351,10 +351,10 @@ export default [
     },
   },
 
-  // createPluginRoot owns the otherwise-restricted React root import, but it
+  // create-plugin-root owns the otherwise-restricted React root import, but it
   // still belongs to the production logging boundary.
   {
-    files: ["src/utils/react/createPluginRoot.tsx"],
+    files: ["src/utils/react/create-plugin-root.tsx"],
     rules: {
       "no-restricted-syntax": [
         "error",
@@ -409,7 +409,7 @@ export default [
                 "src/components/ui must not import values outside @/components/ui, @/lib, " +
                 "and @/constants. Type-only imports are always fine. If a primitive needs " +
                 "plugin state, take it as a prop; if it needs a helper, move the helper to " +
-                "@/lib. Reaching into @/settings, @/aiParams, @/utils, or @/agentMode couples " +
+                "@/lib. Reaching into @/settings, @/ai-params, @/utils, or @/agent-mode couples " +
                 "a presentational component to the plugin runtime and makes it unrenderable " +
                 "and untestable in isolation.",
             },
@@ -438,9 +438,9 @@ export default [
             },
             {
               regex:
-                "^@/(?!(?:(?:.*/)?ui/|components/modals/ReactModal$|" +
+                "^@/(?!(?:(?:.*/)?ui/|components/modals/react-modal$|" +
                 "components/gallery-hosts\\.fixtures$|context$|lib/[^/]+$|" +
-                "utils/react/mountPluginViewRoot$)).*",
+                "utils/react/mount-plugin-view-root$)).*",
               allowTypeImports: true,
               message:
                 "The gallery may only import production values from UI primitives, " +
@@ -523,9 +523,9 @@ export default [
   {
     files: [
       "**/*.cjs",
-      "scripts/build/patchRendererUnsafeUnref.js",
-      "scripts/build/bundleSizeGuard.js",
-      "scripts/build/bundleSizeGuard.test.js",
+      "scripts/build/patch-renderer-unsafe-unref.js",
+      "scripts/build/bundle-size-guard.js",
+      "scripts/build/bundle-size-guard.test.js",
     ],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
@@ -533,14 +533,14 @@ export default [
   },
 
   // Element types (order matters — first match wins; files before folders):
-  //   registry     src/agentMode/backends/registry.ts (file)
-  //   barrel       src/agentMode/index.ts (file)
-  //   session      src/agentMode/session
-  //   acp          src/agentMode/acp
-  //   sdk          src/agentMode/sdk
-  //   backend      src/agentMode/backends/<name>
-  //   ui           src/agentMode/ui
-  //   skills       src/agentMode/skills
+  //   registry     src/agent-mode/backends/registry.ts (file)
+  //   barrel       src/agent-mode/index.ts (file)
+  //   session      src/agent-mode/session
+  //   acp          src/agent-mode/acp
+  //   sdk          src/agent-mode/sdk
+  //   backend      src/agent-mode/backends/<name>
+  //   ui           src/agent-mode/ui
+  //   skills       src/agent-mode/skills
   //   host         src/** (everything else under src/)
   {
     files: ["src/**/*.{ts,tsx,js,jsx}"],
@@ -554,15 +554,15 @@ export default [
       },
       "boundaries/include": ["src/**/*"],
       "boundaries/elements": [
-        { type: "registry", pattern: "src/agentMode/backends/registry.ts", mode: "file" },
-        { type: "barrel", pattern: "src/agentMode/index.ts", mode: "file" },
-        { type: "session", pattern: "src/agentMode/session" },
-        { type: "acp", pattern: "src/agentMode/acp" },
-        { type: "sdk", pattern: "src/agentMode/sdk" },
-        { type: "backend", pattern: "src/agentMode/backends/*", capture: ["name"] },
-        { type: "ui", pattern: "src/agentMode/ui" },
-        { type: "skills", pattern: "src/agentMode/skills" },
-        { type: "modelmgmt", pattern: "src/modelManagement" },
+        { type: "registry", pattern: "src/agent-mode/backends/registry.ts", mode: "file" },
+        { type: "barrel", pattern: "src/agent-mode/index.ts", mode: "file" },
+        { type: "session", pattern: "src/agent-mode/session" },
+        { type: "acp", pattern: "src/agent-mode/acp" },
+        { type: "sdk", pattern: "src/agent-mode/sdk" },
+        { type: "backend", pattern: "src/agent-mode/backends/*", capture: ["name"] },
+        { type: "ui", pattern: "src/agent-mode/ui" },
+        { type: "skills", pattern: "src/agent-mode/skills" },
+        { type: "modelmgmt", pattern: "src/model-management" },
         { type: "host", pattern: "src/**" },
       ],
     },
@@ -602,10 +602,10 @@ export default [
                 },
               },
             },
-            // modelManagement: self-contained module. Host code may
+            // model-management: self-contained module. Host code may
             // freely reach into the module at the boundary layer; the
             // barrel-only entry rule (no deep imports of
-            // `@/modelManagement/types/*`) is enforced by
+            // `@/model-management/types/*`) is enforced by
             // `no-restricted-imports` patterns further down.
             { from: { type: "modelmgmt" }, allow: { to: { type: ["modelmgmt", "host"] } } },
             {
@@ -631,11 +631,11 @@ export default [
   // replaces — does not merge — rule values when the same rule key
   // appears across matching blocks, so both fences MUST live here):
   //
-  //   1. `@agentclientprotocol/sdk` — confined to src/agentMode/acp/.
+  //   1. `@agentclientprotocol/sdk` — confined to src/agent-mode/acp/.
   //      Other agent-mode layers depend on the session-domain types
-  //      in @/agentMode/session/types instead.
-  //   2. `@/modelManagement/*` deep imports — host code must enter the
-  //      modelManagement module via its barrel (`@/modelManagement`).
+  //      in @/agent-mode/session/types instead.
+  //   2. `@/model-management/*` deep imports — host code must enter the
+  //      model-management module via its barrel (`@/model-management`).
   //      This replaces a `modelmgmt-barrel` boundary element with the
   //      lighter no-restricted-imports mechanism already used for (1).
   //
@@ -650,14 +650,14 @@ export default [
             {
               name: "@agentclientprotocol/sdk",
               message:
-                "ACP wire types are confined to src/agentMode/acp/. session/, sdk/, ui/, backends/, and skills/ should depend on the session-domain types in @/agentMode/session/types instead. See src/agentMode/AGENTS.md.",
+                "ACP wire types are confined to src/agent-mode/acp/. session/, sdk/, ui/, backends/, and skills/ should depend on the session-domain types in @/agent-mode/session/types instead. See src/agent-mode/AGENTS.md.",
             },
           ],
           patterns: [
             {
-              group: ["@/modelManagement/*"],
+              group: ["@/model-management/*"],
               message:
-                "Import from @/modelManagement (the barrel) only. Deep imports of @/modelManagement/types/* are not allowed from outside the module. See src/modelManagement/AGENTS.md.",
+                "Import from @/model-management (the barrel) only. Deep imports of @/model-management/types/* are not allowed from outside the module. See src/model-management/AGENTS.md.",
             },
           ],
         },
@@ -665,13 +665,13 @@ export default [
     },
   },
   {
-    files: ["src/agentMode/acp/**/*.{ts,tsx}"],
+    files: ["src/agent-mode/acp/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": "off",
     },
   },
   {
-    files: ["src/modelManagement/**/*.{ts,tsx}"],
+    files: ["src/model-management/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": "off",
     },
@@ -717,7 +717,7 @@ export default [
   // agent-mode subtree only; production code stays enforced. Placed after the
   // general TS block so it actually overrides.
   {
-    files: ["tests/unit/agentMode/**/*.test.{ts,tsx}"],
+    files: ["tests/unit/agent-mode/**/*.test.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-argument": "off",

@@ -2,11 +2,11 @@
  * Editor utilities - CM6 extensions and helpers.
  */
 
-export { SelectionHighlight } from "./selectionHighlight";
+export { SelectionHighlight } from "./selection-highlight";
 
-export { QuickAskController } from "./quickAskController";
+export { QuickAskController } from "./quick-ask-controller";
 
 export {
   ChatSelectionHighlightController,
   hideChatSelectionHighlight,
-} from "./chatSelectionHighlightController";
+} from "./chat-selection-highlight-controller";

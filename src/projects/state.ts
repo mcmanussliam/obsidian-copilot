@@ -1,6 +1,6 @@
 import { atom, createStore } from "jotai";
 import { useAtomValue } from "jotai";
-import { ProjectConfig } from "@/aiParams";
+import { ProjectConfig } from "@/ai-params";
 import { ProjectFileRecord } from "@/projects/type";
 import { normalizePath } from "obsidian";
 

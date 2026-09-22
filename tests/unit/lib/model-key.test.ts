@@ -1,5 +1,5 @@
 import { getModelKeyFromModel } from "@/lib/model-key";
-import type { CustomModel } from "@/aiParams";
+import type { CustomModel } from "@/ai-params";
 
 const model = (overrides: Partial<CustomModel> = {}): CustomModel => ({
   name: "gpt-5",

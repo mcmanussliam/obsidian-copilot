@@ -2,7 +2,7 @@ import { logInfo, logWarn } from "@/logger";
 import { CHUNK_SIZE } from "@/constants";
 import { App, TFile } from "obsidian";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { MemoryManager } from "./utils/MemoryManager";
+import { MemoryManager } from "./utils/memory-manager";
 
 /**
  * Chunk interface for unified search system

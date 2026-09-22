@@ -1,0 +1,69 @@
+import { translateBackendState } from "@/agent-mode/session/translate-backend-state";
+import type { BackendDescriptor, RawModeState } from "@/agent-mode/session/types";
+import { buildCodexModeMapping } from "@/agent-mode/backends/codex/codex-mode-mapping";
+
+function modes(currentModeId: string, ids: string[]): RawModeState {
+  return {
+    currentModeId,
+    availableModes: ids.map((id) => ({ id, name: id })),
+  };
+}
+
+describe("buildCodexModeMapping", () => {
+  it("maps the current agentclientprotocol adapter inventory", () => {
+    const modeState = modes("agent", ["read-only", "agent", "agent-full-access"]);
+    const mapping = buildCodexModeMapping(modeState);
+    const state = translateBackendState({ models: null, modes: modeState, configOptions: null }, {
+      getModeMapping: buildCodexModeMapping,
+    } as unknown as BackendDescriptor);
+
+    expect(mapping.canonical).toEqual({
+      default: "agent",
+      plan: "read-only",
+      auto: "agent-full-access",
+    });
+    expect(mapping.readOnlyModeId).toBe("read-only");
+    expect(state.mode).toEqual({
+      current: "default",
+      options: [
+        { value: "default", label: "Default" },
+        { value: "plan", label: "Plan" },
+        { value: "auto", label: "Auto" },
+      ],
+      apply: {
+        default: { kind: "setMode", nativeId: "agent" },
+        plan: { kind: "setMode", nativeId: "read-only" },
+        auto: { kind: "setMode", nativeId: "agent-full-access" },
+      },
+    });
+  });
+
+  it("https://github.com/logancyang/obsidian-copilot/issues/2916 does not map the separate Zed adapter's legacy ids", () => {
+    const mapping = buildCodexModeMapping(modes("auto", ["read-only", "auto", "full-access"]));
+
+    expect(mapping.canonical).toEqual({
+      default: undefined,
+      plan: "read-only",
+      auto: undefined,
+    });
+  });
+
+  it("omits canonical choices that the adapter does not advertise", () => {
+    const mapping = buildCodexModeMapping(modes("custom", ["custom"]));
+
+    expect(mapping.canonical).toEqual({
+      default: undefined,
+      plan: undefined,
+      auto: undefined,
+    });
+    expect(mapping.readOnlyModeId).toBeNull();
+  });
+
+  it("keeps only the inventory-free fan-out contract (https://github.com/logancyang/obsidian-copilot/issues/2916)", () => {
+    expect(buildCodexModeMapping(null)).toEqual({
+      kind: "setMode",
+      canonical: {},
+      readOnlyModeId: "read-only",
+    });
+  });
+});

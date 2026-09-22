@@ -1,5 +1,5 @@
 import { getSettings } from "@/settings/model";
-import { logFileManager } from "@/logFileManager";
+import { logFileManager } from "@/log-file-manager";
 
 export function logInfo(...args: unknown[]) {
   if (getSettings().debug) {

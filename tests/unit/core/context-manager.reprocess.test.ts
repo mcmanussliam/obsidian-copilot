@@ -1,0 +1,106 @@
+// This suite keeps the real envelope engine and selected-text formatter; the L2 and
+// parsing suites mock those collaborators to isolate their separate contracts.
+import { PromptContextEnvelope } from "@/context/prompt-context-types";
+import { App, TFile, Vault } from "obsidian";
+import { ChainType } from "@/chain-type";
+import { ContextManager } from "@/core/context-manager";
+import { MessageRepository } from "@/core/message-repository";
+import { FileParserManager } from "@/tools/file-parser-manager";
+import { ChatMessage, SelectedTextContext } from "@/types/message";
+
+const TFileConstructor = TFile as unknown as new (path: string) => TFile;
+
+const mockComposerSelection: SelectedTextContext[] = [
+  {
+    id: "composer",
+    sourceType: "web",
+    title: "Unsent",
+    url: "https://example.com/unsent",
+    content: "Unsent selection B",
+  },
+];
+jest.mock("@/ai-params", () => ({ getSelectedTextContexts: () => mockComposerSelection }));
+jest.mock("@/settings/model", () => ({ getSettings: () => ({ autoCompactThreshold: Infinity }) }));
+jest.mock("@/logger");
+jest.mock("@/commands/custom-command-utils", () => ({
+  processPrompt: async (_app: App, text: string) => ({ processedPrompt: text, includedFiles: [] }),
+}));
+jest.mock("@/mentions/mention", () => ({ Mention: { getInstance: () => ({}) } }));
+jest.mock("@/context-processor", () => {
+  const actual = jest.requireActual<typeof import("@/context-processor")>("@/context-processor");
+  return {
+    ContextProcessor: {
+      getInstance: () => ({
+        processContextNotes: async (
+          _paths: Set<string>,
+          _parser: FileParserManager,
+          _vault: Vault,
+          notes: TFile[]
+        ) =>
+          notes
+            .map(
+              (note) =>
+                `<note_context><title>Stored note</title><path>${note.path}</path><content>Stored note contents</content></note_context>`
+            )
+            .join("\n"),
+        processContextWebTabs: async () => "",
+        processSelectedTextContexts: actual.ContextProcessor.prototype.processSelectedTextContexts,
+      }),
+    },
+  };
+});
+
+describe("ContextManager", () => {
+  describe("ContextManager", () => {
+    describe("reprocessMessageContext()", () => {
+      it("preserves stored notes and selection after the workspace note changes https://github.com/Brevilabs/obsidian-copilot-private/issues/465", async () => {
+        const message: ChatMessage = {
+          id: "user-1",
+          sender: "user",
+          message: "Explain this",
+          timestamp: null,
+          isVisible: true,
+          context: {
+            notes: [new TFileConstructor("Original note.md")],
+            urls: [],
+            selectedTextContexts: [
+              {
+                id: "original",
+                sourceType: "web",
+                title: "Original",
+                url: "https://example.com/original",
+                content: "Original selection A",
+              },
+            ],
+          },
+        };
+        const updateProcessedText = jest.fn();
+        const repo = {
+          getMessage: () => message,
+          getDisplayMessages: () => [message],
+          updateProcessedText,
+        } as unknown as MessageRepository;
+        const app = { vault: {} } as App;
+        await ContextManager.getInstance().reprocessMessageContext(
+          app,
+          "user-1",
+          repo,
+          {} as FileParserManager,
+          app.vault,
+          ChainType.LLM_CHAIN,
+          false,
+          new TFileConstructor("Unrelated active note.md"),
+          "Updated vault instructions"
+        );
+        const envelope = updateProcessedText.mock.calls[0][2] as PromptContextEnvelope;
+        expect(envelope.serializedText).toContain("Original selection A");
+        expect(envelope.serializedText).toContain("Original note.md");
+        expect(envelope.serializedText).not.toContain("Unrelated active note.md");
+        expect(envelope.serializedText).not.toContain("Unsent selection B");
+        expect(envelope.layers.find((layer) => layer.id === "L1_SYSTEM")?.text).toBe(
+          "Updated vault instructions"
+        );
+      });
+    });
+  });
+});

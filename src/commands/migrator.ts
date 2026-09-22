@@ -1,6 +1,6 @@
 import { App } from "obsidian";
-import { CustomCommandManager } from "@/commands/customCommandManager";
-import { getCustomCommandsFolder, validateCommandName } from "@/commands/customCommandUtils";
+import { CustomCommandManager } from "@/commands/custom-command-manager";
+import { getCustomCommandsFolder, validateCommandName } from "@/commands/custom-command-utils";
 import { CustomCommand } from "@/commands/type";
 import { getSettings, updateSetting } from "@/settings/model";
 import { ensureFolderExists } from "@/utils";
@@ -13,7 +13,7 @@ import {
 } from "@/commands/constants";
 import { COPILOT_COMMAND_CONTEXT_MENU_ENABLED } from "@/commands/constants";
 import { getCachedCustomCommands } from "@/commands/state";
-import type { StartupMigrationItem } from "@/services/startupMigration";
+import type { StartupMigrationItem } from "@/services/startup-migration";
 
 async function saveUnsupportedCommands(app: App, commands: CustomCommand[]) {
   const folderPath = getCustomCommandsFolder();

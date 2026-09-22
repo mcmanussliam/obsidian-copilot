@@ -10,23 +10,23 @@ const failures = [];
 const loadCriticalFiles = [
   "src/main.ts",
   "src/commands/index.ts",
-  "src/settings/SettingsPage.tsx",
-  "src/settings/v2/SettingsMainV2.tsx",
-  "src/settings/v2/components/AdvancedSettings.tsx",
+  "src/settings/settings-page.tsx",
+  "src/settings/v2/settings-main-v2.tsx",
+  "src/settings/v2/components/advanced-settings.tsx",
   // https://github.com/Brevilabs/obsidian-copilot-private/issues/373:
   // Quick Chat settings must not load desktop agents when opened on mobile.
-  "src/settings/v2/components/BasicSettings.tsx",
-  "src/settings/v2/components/QuickChatPanel.tsx",
-  "src/settings/v2/components/ChatModelEnableList.tsx",
-  "src/settings/v2/components/configuredModelGrouping.ts",
-  "src/components/chat-components/plugins/SlashCommandPlugin.tsx",
-  "src/components/chat-components/plugins/slashMenuItems.ts",
+  "src/settings/v2/components/basic-settings.tsx",
+  "src/settings/v2/components/quick-chat-panel.tsx",
+  "src/settings/v2/components/chat-model-enable-list.tsx",
+  "src/settings/v2/components/configured-model-grouping.ts",
+  "src/components/chat-components/plugins/slash-command-plugin.tsx",
+  "src/components/chat-components/plugins/slash-menu-items.ts",
 ];
 
 const contextCacheConsumerFiles = [
   "src/commands/index.ts",
-  "src/components/project/agentProcessingAdapter.ts",
-  "src/utils/cacheFileOpener.ts",
+  "src/components/project/agent-processing-adapter.ts",
+  "src/utils/cache-file-opener.ts",
 ];
 
 const nodeModuleIds = new Set([
@@ -95,8 +95,8 @@ function isTypeOnlyImport(importStatement) {
 
 function checkAgentModeImportBoundaries() {
   const staticAgentModeImport =
-    /import\s+(?:type\s+)?[^;]+?\s+from\s+["']@\/agentMode(?:\/[^"']*)?["']\s*;?/g;
-  const dynamicAgentModeImport = /import\s*\(\s*["']@\/agentMode(?:\/[^"']*)?["']\s*\)/g;
+    /import\s+(?:type\s+)?[^;]+?\s+from\s+["']@\/agent-mode(?:\/[^"']*)?["']\s*;?/g;
+  const dynamicAgentModeImport = /import\s*\(\s*["']@\/agent-mode(?:\/[^"']*)?["']\s*\)/g;
 
   for (const relativePath of loadCriticalFiles) {
     const source = readRepoFile(relativePath);
@@ -111,7 +111,7 @@ function checkAgentModeImportBoundaries() {
     // Every dynamic Agent Mode import must be gated by `isDesktopRuntime()`,
     // NOT a bare `Platform.isDesktopApp`: the latter stays `true` under
     // `app.emulateMobile(true)` (which stubs Node to null), so it does not keep the
-    // `@/agentMode` barrel off the emulated-mobile load path and the plugin crashes.
+    // `@/agent-mode` barrel off the emulated-mobile load path and the plugin crashes.
     const dynamicImports = Array.from(source.matchAll(dynamicAgentModeImport));
     if (dynamicImports.length > 0 && !source.includes("isDesktopRuntime")) {
       fail(

@@ -1,0 +1,106 @@
+import { assertBinaryCompatible } from "@/agent-mode/backends/shared/binary-compatibility";
+import { getSettings } from "@/settings/model";
+import { detectBinary } from "@/utils/detect-binary";
+import { AcpBackend, AcpSpawnDescriptor } from "@/agent-mode/acp/types";
+import { buildSimpleSpawnDescriptor } from "@/agent-mode/backends/shared/simple-binary-backend";
+import { buildAgentSystemPrompt } from "@/agent-mode/backends/shared/agent-system-prompt";
+import {
+  buildBuiltinSkillEnv,
+  sanitizeBuiltinSkillEnvOverrides,
+} from "@/agent-mode/backends/shared/builtin-skill-env";
+import type { PlanUsageReading } from "@/agent-mode/session/plan-usage";
+import { defaultCodexHome, readCodexPlanUsage } from "./codex-plan-usage";
+import { mergeCodexConfigEnv } from "./codex-config-env";
+import {
+  buildCodexAcpInvocation,
+  inspectCodexAcpPackage,
+  CODEX_MIN_VERSION,
+} from "./codex-version";
+
+/**
+ * Spawns the configured `@agentclientprotocol/codex-acp` package entry point.
+ * The package exposes Codex as an ACP server over stdio. Authentication is inherited
+ * from the adapter's bundled Codex login (`~/.codex/auth.json`) or
+ * `OPENAI_API_KEY` / `CODEX_API_KEY` exported in the user's shell — we
+ * deliberately do not inject keys so ChatGPT-login subscriptions work
+ * transparently.
+ */
+export class CodexBackend implements AcpBackend {
+  readonly id = "codex" as const;
+  readonly displayName = "Codex";
+
+  /**
+   * Where the spawned Codex keeps its state, taken from the env we actually gave it so a
+   * user who redirects `CODEX_HOME` has their caps read from the same place Codex writes
+   * them. Null until the first spawn, because until then there is no Codex to read from.
+   */
+  private codexHome: string | null = null;
+
+  constructor(private readonly clientVersion = "") {}
+
+  async buildSpawnDescriptor(ctx: {
+    vaultBasePath: string;
+    vaultName?: string;
+  }): Promise<AcpSpawnDescriptor> {
+    const settings = getSettings();
+    const descriptor = buildSimpleSpawnDescriptor(
+      settings.agentMode?.backends?.codex?.binaryPath,
+      "Codex adapter path not configured. Open Agent Mode settings and install or detect @agentclientprotocol/codex-acp.",
+      sanitizeBuiltinSkillEnvOverrides(settings.agentMode?.backends?.codex?.envOverrides),
+      {
+        // Builtin skills consume plugin-managed runtime paths and credentials.
+        ...(await buildBuiltinSkillEnv(this.clientVersion, ctx.vaultBasePath, ctx.vaultName)),
+        // The supported adapter derives its initial ACP mode from this variable.
+        // User env overrides still win.
+        INITIAL_AGENT_MODE: "agent",
+      }
+    );
+    // Forward the shared built-in prompt — the Copilot base framing, tool
+    // guidance, and pill-syntax directive — through the current adapter's
+    // CODEX_CONFIG JSON. Codex appends `developer_instructions` to its own base
+    // prompt, so this adds the Obsidian-vault framing on top. Read at spawn
+    // time; the host restarts Codex on prompt changes via
+    // `restartOnSystemPromptChange`.
+    const directive = buildAgentSystemPrompt();
+    descriptor.env.CODEX_CONFIG = mergeCodexConfigEnv(descriptor.env.CODEX_CONFIG, directive);
+    // Deliberately no `project_doc_fallback_filenames=["project.md"]`: project.md is metadata,
+    // while Codex discovers the canonical AGENTS.md instructions from the session cwd.
+    const installed = inspectCodexAcpPackage(descriptor.command);
+    const entryPath = installed.entryPath;
+    // Native bundles include their runtime; only user-owned npm entries need Node.
+    // https://github.com/Brevilabs/obsidian-copilot-private/issues/379
+    const nodePath =
+      process.platform === "win32" && entryPath.endsWith(".js")
+        ? await detectBinary("node")
+        : undefined;
+    const invocation = buildCodexAcpInvocation(
+      entryPath,
+      descriptor.args,
+      descriptor.env,
+      process.platform,
+      nodePath ?? undefined
+    );
+    this.codexHome = invocation.env.CODEX_HOME ?? defaultCodexHome();
+    // The plugin minimum and this executable's version are fixed for this launch.
+    // https://github.com/Brevilabs/obsidian-copilot-private/issues/535
+    assertBinaryCompatible(
+      {
+        kind: "installed",
+        version: installed.runtimeVersion,
+        source: settings.agentMode?.backends?.codex?.binarySource ?? "custom",
+      },
+      CODEX_MIN_VERSION,
+      this.displayName
+    );
+    return { ...descriptor, ...invocation };
+  }
+
+  /**
+   * Codex's caps, read back from the rollout it writes for every turn. See
+   * `codexPlanUsage.ts` for why that file is the only structured source a client has.
+   * Before the first spawn there is no Codex to read from, so there is no news yet.
+   */
+  async readPlanUsage(): Promise<PlanUsageReading> {
+    return this.codexHome === null ? { kind: "unavailable" } : readCodexPlanUsage(this.codexHome);
+  }
+}

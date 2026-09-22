@@ -1,10 +1,10 @@
 import { migrateSystemPromptsFromSettings } from "@/system-prompts/migration";
 import { TFile, Vault } from "obsidian";
 import * as settingsModel from "@/settings/model";
-import * as systemPromptUtils from "@/system-prompts/systemPromptUtils";
+import * as systemPromptUtils from "@/system-prompts/system-prompt-utils";
 import * as logger from "@/logger";
 import * as utils from "@/utils";
-import { mockTFile } from "@tests/helpers/mockObsidian";
+import { mockTFile } from "@tests/helpers/mock-obsidian";
 
 // Mock Obsidian
 jest.mock("obsidian", () => ({
@@ -27,7 +27,7 @@ jest.mock("@/logger", () => ({
 }));
 
 // Mock system prompt utils
-jest.mock("@/system-prompts/systemPromptUtils", () => ({
+jest.mock("@/system-prompts/system-prompt-utils", () => ({
   getSystemPromptsFolder: jest.fn(() => "SystemPrompts"),
   getPromptFilePath: jest.fn((title: string) => `SystemPrompts/${title}.md`),
   getPromptFilePathInFolder: jest.fn(

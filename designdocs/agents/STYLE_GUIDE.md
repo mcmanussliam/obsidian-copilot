@@ -15,7 +15,7 @@ language, comment, styling, and code-structure rules.
 
 ESLint enforces module boundaries in two forms: layer rules
 (`eslint-plugin-boundaries`, e.g. the agent-mode layers in
-`src/agentMode/AGENTS.md`) and path fences (`no-restricted-imports`
+`src/agent-mode/AGENTS.md`) and path fences (`no-restricted-imports`
 allowlists, e.g. the gallery/story fence and the `src/components/ui`
 purity fence).
 
@@ -25,15 +25,15 @@ points the wrong way. In order of preference:
 
 1. **Move the file** so it fits an existing boundary. Example: the
    gallery fence admits any `ui/` folder, so a presentational component
-   that needs a story belongs under one — `src/agentMode/skills/ui/` and
-   `src/agentMode/backends/shared/ui/` follow this convention inside
+   that needs a story belongs under one — `src/agent-mode/skills/ui/` and
+   `src/agent-mode/backends/shared/ui/` follow this convention inside
    layers whose other modules are plugin-coupled.
 2. **Re-route the dependency** — pass plugin state in as props, or
    extend the contract surface the boundary already exposes (e.g.
    `BackendDescriptor`) instead of reaching across layers.
 3. **Create a new boundary** when a genuinely new kind of module has
    appeared: a named folder plus its own lint rule and a documented
-   contract (see "Adding a new layer" in `src/agentMode/AGENTS.md`).
+   contract (see "Adding a new layer" in `src/agent-mode/AGENTS.md`).
 
 Never widen a fence with a per-file exemption (a `SomeComponent$` regex
 carve-out, an extra `!@/...` negation for one module). Each carve-out

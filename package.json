@@ -18,13 +18,13 @@
     "build": "npm run build:tailwind && npm run build:esbuild || exit 1",
     "build:tailwind": "npx tailwindcss -i src/styles/tailwind.css -o dist/styles.css --minify",
     "build:esbuild": "tsc -noEmit -skipLibCheck && node scripts/build/esbuild.config.mjs production",
-    "lint": "eslint .",
     "review:obsidian": "run-s review:obsidian:package review:obsidian:source review:obsidian:styles review:obsidian:audit review:obsidian:fixtures",
     "review:obsidian:package": "node scripts/review/review-obsidian-package.mjs",
     "review:obsidian:source": "eslint --config eslint.review.config.mjs src dev/gallery package.json LICENSE --format ./scripts/review/eslint-github-formatter.cjs",
     "review:obsidian:styles": "npm run build:tailwind && stylelint 'src/**/*.css' 'dev/gallery/**/*.css' --custom-formatter scripts/review/stylelint-github-formatter.mjs && stylelint dist/styles.css --config stylelint.packaged.config.mjs --custom-formatter scripts/review/stylelint-github-formatter.mjs",
     "review:obsidian:audit": "npm audit --omit=dev --audit-level=critical",
     "review:obsidian:fixtures": "node scripts/review/review-obsidian-fixtures.mjs",
+    "lint": "eslint .",
     "lint:dead": "npx --yes knip@5",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write 'src/**/*.{js,ts,tsx,md}' 'tests/**/*.{js,ts,tsx,md}'",
@@ -36,7 +36,7 @@
     "test:gallery-vault:script": "bash scripts/gallery/gallery-vault.test.sh",
     "test:reset-data": "bash scripts/vault/test-reset-data.sh",
     "version": "node scripts/release/version-bump.mjs",
-    "prompt:debug": "node scripts/debug/printPromptDebug.js"
+    "prompt:debug": "node scripts/debug/print-prompt-debug.js"
   },
   "keywords": [],
   "author": "Logan Yang",

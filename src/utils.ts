@@ -3,19 +3,19 @@ import { compareSemver } from "@/utils/semver";
 // so the same Buffer code path works on desktop (Electron) and mobile (WebView).
 import { Buffer } from "buffer/";
 
-import { ChainType } from "@/chainType";
+import { ChainType } from "@/chain-type";
 import {
   ALLOWED_NOTE_CONTEXT_EXTENSIONS,
   ModelCapability,
   TEXT_READABLE_EXTENSIONS,
 } from "@/constants";
 import { logInfo, logWarn } from "@/logger";
-import { formatUsageCapError } from "@/utils/usageCapError";
+import { formatUsageCapError } from "@/utils/usage-cap-error";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { MemoryVariables } from "@langchain/core/memory";
 import { DateTime } from "luxon";
 import { App, MarkdownView, Notice, TFile, Vault, normalizePath, requestUrl } from "obsidian";
-import { CustomModel } from "./aiParams";
+import { CustomModel } from "./ai-params";
 export { checkModelApiKey, err2String, getProviderLabel } from "@/lib/model-display-utils";
 
 /**

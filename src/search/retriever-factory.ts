@@ -1,0 +1,194 @@
+import { logInfo } from "@/logger";
+import { getSearchBackend } from "@/miyo/miyo-utils";
+import { getSettings, CopilotSettings } from "@/settings/model";
+import { App } from "obsidian";
+import { MiyoSemanticRetriever } from "./miyo/miyo-semantic-retriever";
+import { TieredLexicalRetriever } from "./v3/tiered-lexical-retriever";
+
+/**
+ * Common options for all retriever types.
+ * This interface unifies the configuration across different retriever implementations.
+ */
+export interface RetrieverOptions {
+  /** Minimum similarity score threshold for results (0-1) */
+  minSimilarityScore?: number;
+  /** Maximum number of results to return */
+  maxK: number;
+  /** Additional terms to boost in search (defaults to empty array) */
+  salientTerms?: string[];
+  /** Optional time range filter */
+  timeRange?: { startTime: number; endTime: number };
+  /** Weight for text/keyword matching vs semantic (0-1) */
+  textWeight?: number;
+  /** Return all matching results up to a limit */
+  returnAll?: boolean;
+  /** Threshold for using reranker */
+  useRerankerThreshold?: number;
+  /** Tag terms to filter by (used by SelfHostRetriever for server-side filtering) */
+  tagTerms?: string[];
+}
+
+/**
+ * Internal options with defaults applied.
+ * Used when passing options to concrete retriever implementations.
+ */
+interface NormalizedRetrieverOptions {
+  minSimilarityScore: number;
+  maxK: number;
+  salientTerms: string[];
+  timeRange?: { startTime: number; endTime: number };
+  textWeight?: number;
+  returnAll: boolean;
+  useRerankerThreshold?: number;
+  tagTerms: string[];
+}
+
+/**
+ * Result type indicating which retriever was selected and why.
+ */
+export interface RetrieverSelectionResult {
+  retriever: DocumentRetriever;
+  type: "semantic" | "lexical";
+  reason: string;
+}
+
+/**
+ * Normalize options by applying defaults.
+ * Ensures all required fields are present with proper types.
+ */
+function normalizeOptions(options: RetrieverOptions): NormalizedRetrieverOptions {
+  return {
+    minSimilarityScore: options.minSimilarityScore ?? 0.1,
+    maxK: options.maxK,
+    salientTerms: options.salientTerms ?? [],
+    timeRange: options.timeRange,
+    textWeight: options.textWeight,
+    returnAll: options.returnAll ?? false,
+    useRerankerThreshold: options.useRerankerThreshold,
+    tagTerms: options.tagTerms ?? [],
+  };
+}
+
+/**
+ * Common interface for retrievers that can get relevant documents.
+ * This is the shared interface for MiyoSemanticRetriever and TieredLexicalRetriever.
+ */
+export interface DocumentRetriever {
+  getRelevantDocuments(query: string): Promise<import("@langchain/core/documents").Document[]>;
+}
+
+/**
+ * Factory for creating retrievers based on current settings.
+ * Centralizes the retriever selection logic to avoid duplication across:
+ * - CopilotPlusChainRunner (via SearchTools)
+ * - Any other components that need search
+ *
+ * Priority order:
+ * 1. Miyo-backed semantic search (when Miyo is enabled)
+ * 2. Lexical search / TieredLexicalRetriever (default)
+ */
+export class RetrieverFactory {
+  /**
+   * Create a retriever based on current settings.
+   *
+   * @param app - Obsidian app instance
+   * @param options - Retriever configuration options
+   * @param settings - Optional settings override (defaults to current settings)
+   * @returns Object containing the retriever and metadata about selection
+   */
+  static async createRetriever(
+    app: App,
+    options: RetrieverOptions,
+    settings?: Partial<CopilotSettings>
+  ): Promise<RetrieverSelectionResult> {
+    const currentSettings = settings ? { ...getSettings(), ...settings } : getSettings();
+
+    // Normalize options with defaults
+    const normalizedOptions = normalizeOptions(options);
+
+    // Miyo-backed semantic search (self-host mode + Miyo enabled)
+    if (RetrieverFactory.shouldUseMiyo(currentSettings)) {
+      const retriever = RetrieverFactory.createMiyoRetriever(app, options);
+      logInfo("RetrieverFactory: Using MiyoSemanticRetriever (standalone)");
+      return {
+        retriever,
+        type: "semantic",
+        reason: "Miyo search is enabled",
+      };
+    }
+
+    // A legacy semantic-search flag may remain in data.json until its settings
+    // migration, but it must not resurrect the removed client-side index.
+    // https://github.com/Brevilabs/obsidian-copilot-private/issues/281
+    // Default: Lexical search (TieredLexicalRetriever)
+    const retriever = new TieredLexicalRetriever(app, normalizedOptions);
+    logInfo("RetrieverFactory: Using TieredLexicalRetriever (lexical search)");
+    return {
+      retriever,
+      type: "lexical",
+      reason: "Default lexical search",
+    };
+  }
+
+  /**
+   * Create a retriever that forces lexical search regardless of settings.
+   * Useful for time-range queries and tag-based searches that work better with lexical.
+   *
+   * @param app - Obsidian app instance
+   * @param options - Retriever configuration options
+   * @returns The lexical retriever
+   */
+  static createLexicalRetriever(app: App, options: RetrieverOptions): TieredLexicalRetriever {
+    return new TieredLexicalRetriever(app, normalizeOptions(options));
+  }
+
+  /**
+   * Get the current retriever type based on settings without creating an instance.
+   * Useful for UI display or debugging.
+   *
+   * @param settings - Optional settings override
+   * @returns The type of retriever that would be created
+   */
+  static getRetrieverType(settings?: Partial<CopilotSettings>): "semantic" | "lexical" {
+    const currentSettings = settings ? { ...getSettings(), ...settings } : getSettings();
+
+    if (RetrieverFactory.shouldUseMiyo(currentSettings)) {
+      return "semantic";
+    }
+
+    return "lexical";
+  }
+
+  /**
+   * Determine whether Miyo-backed search should be active.
+   *
+   * @param settings - Copilot settings snapshot.
+   * @returns True when Miyo should be used for semantic retrieval.
+   */
+  private static shouldUseMiyo(settings: CopilotSettings): boolean {
+    return getSearchBackend(settings) === "miyo";
+  }
+
+  /**
+   * Check whether Miyo search is currently active based on live settings.
+   *
+   * @returns True when Miyo is the active search backend.
+   */
+  static isMiyoActive(): boolean {
+    return RetrieverFactory.shouldUseMiyo(getSettings());
+  }
+
+  /**
+   * Create a standalone Miyo retriever (no local lexical merge).
+   * Use this when Miyo should be the sole search backend.
+   *
+   * @param app - Obsidian app instance.
+   * @param options - Retriever configuration options.
+   * @returns Miyo semantic retriever instance.
+   */
+  static createMiyoRetriever(app: App, options: RetrieverOptions): MiyoSemanticRetriever {
+    // maxK is the post-filter cap on returned chunks; the retriever over-fetches
+    // candidates internally to compensate for inclusion/exclusion filtering.
+    return new MiyoSemanticRetriever(app, normalizeOptions(options));
+  }
+}
