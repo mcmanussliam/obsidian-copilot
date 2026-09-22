@@ -6,11 +6,11 @@ TEST_ROOT="$(mktemp -d)"
 trap 'rm -rf "$TEST_ROOT"' EXIT
 
 FIXTURE_ROOT="$TEST_ROOT/repo"
-CURRENT_SOURCE="$FIXTURE_ROOT/dev/gallery"
+CURRENT_SOURCE="$FIXTURE_ROOT/gallery"
 LEGACY_SOURCE="$TEST_ROOT/legacy-gallery"
 FAKE_BIN="$TEST_ROOT/bin"
-mkdir -p "$CURRENT_SOURCE" "$FIXTURE_ROOT/scripts/gallery" "$LEGACY_SOURCE" "$FAKE_BIN"
-cp "$REPO_ROOT/scripts/gallery/gallery-vault.sh" "$FIXTURE_ROOT/scripts/gallery/gallery-vault.sh"
+mkdir -p "$CURRENT_SOURCE/dist" "$FIXTURE_ROOT/gallery/scripts" "$LEGACY_SOURCE" "$FAKE_BIN"
+cp "$REPO_ROOT/gallery/scripts/gallery-vault.sh" "$FIXTURE_ROOT/gallery/scripts/gallery-vault.sh"
 
 cat >"$CURRENT_SOURCE/manifest.json" <<'EOF'
 {
@@ -19,8 +19,8 @@ cat >"$CURRENT_SOURCE/manifest.json" <<'EOF'
   "version": "0.0.1"
 }
 EOF
-printf 'gallery bundle\n' >"$CURRENT_SOURCE/main.js"
-printf 'gallery styles\n' >"$CURRENT_SOURCE/styles.css"
+printf 'gallery bundle\n' >"$CURRENT_SOURCE/dist/main.js"
+printf 'gallery styles\n' >"$CURRENT_SOURCE/dist/styles.css"
 printf 'legacy bundle\n' >"$LEGACY_SOURCE/main.js"
 printf 'legacy manifest\n' >"$LEGACY_SOURCE/manifest.json"
 printf 'legacy styles\n' >"$LEGACY_SOURCE/styles.css"
@@ -32,8 +32,8 @@ exit 0
 EOF
 chmod +x "$FAKE_BIN/obsidian"
 
-if ! grep -qxF ".hotreload" "$REPO_ROOT/dev/gallery/.gitignore"; then
-  echo "expected dev/gallery/.hotreload to be ignored" >&2
+if ! grep -qxF ".hotreload" "$REPO_ROOT/gallery/.gitignore"; then
+  echo "expected gallery/.hotreload to be ignored" >&2
   exit 1
 fi
 
@@ -57,7 +57,26 @@ run_deploy() {
   local vault_root="$1"
   COPILOT_TEST_VAULT_PATH="$vault_root" \
     OBSIDIAN_BIN="$FAKE_BIN/obsidian" \
-    bash "$FIXTURE_ROOT/scripts/gallery/gallery-vault.sh" >/dev/null
+    bash "$FIXTURE_ROOT/gallery/scripts/gallery-vault.sh" >/dev/null
+}
+
+assert_deployed_files() {
+  local gallery_dir="$1"
+  local source_root="$2"
+  local artifact
+  for artifact in manifest.json main.js styles.css; do
+    if [[ ! -f "$gallery_dir/$artifact" || -L "$gallery_dir/$artifact" ]]; then
+      echo "expected a regular deployed file: $gallery_dir/$artifact" >&2
+      exit 1
+    fi
+  done
+  cmp "$gallery_dir/manifest.json" "$source_root/manifest.json"
+  cmp "$gallery_dir/main.js" "$source_root/dist/main.js"
+  cmp "$gallery_dir/styles.css" "$source_root/dist/styles.css"
+  if [[ ! -f "$gallery_dir/.hotreload" || -L "$gallery_dir/.hotreload" ]]; then
+    echo "expected deployed gallery to contain a regular .hotreload marker" >&2
+    exit 1
+  fi
 }
 
 assert_file_content() {
@@ -88,6 +107,20 @@ assert_unrelated_vault_state() {
   assert_file_content "$vault_root/.obsidian/community-plugins.json" '["copilot","hot-reload"]'
 }
 
+FRESH_VAULT="$TEST_ROOT/fresh vault"
+FRESH_GALLERY="$FRESH_VAULT/.obsidian/plugins/copilot-component-gallery"
+prepare_vault "$FRESH_VAULT"
+run_deploy "$FRESH_VAULT"
+assert_deployed_files "$FRESH_GALLERY" "$CURRENT_SOURCE"
+assert_unrelated_vault_state "$FRESH_VAULT"
+
+# Rebuilding the checkout must not mutate the deployed snapshot until redeployment.
+printf 'rebuilt gallery bundle\n' >"$CURRENT_SOURCE/dist/main.js"
+assert_file_content "$FRESH_GALLERY/main.js" "gallery bundle"
+run_deploy "$FRESH_VAULT"
+assert_deployed_files "$FRESH_GALLERY" "$CURRENT_SOURCE"
+assert_unrelated_vault_state "$FRESH_VAULT"
+
 KNOWN_VAULT="$TEST_ROOT/known-vault"
 KNOWN_GALLERY="$KNOWN_VAULT/.obsidian/plugins/copilot-component-gallery"
 prepare_vault "$KNOWN_VAULT"
@@ -95,11 +128,8 @@ create_legacy_gallery_dir "$KNOWN_GALLERY"
 
 run_deploy "$KNOWN_VAULT"
 
-assert_symlink_target "$KNOWN_GALLERY" "$CURRENT_SOURCE"
-if [[ ! -f "$CURRENT_SOURCE/.hotreload" || -L "$CURRENT_SOURCE/.hotreload" ]]; then
-  echo "expected deployment source to contain a regular .hotreload marker" >&2
-  exit 1
-fi
+assert_deployed_files "$KNOWN_GALLERY" "$CURRENT_SOURCE"
+assert_file_content "$LEGACY_SOURCE/main.js" "legacy bundle"
 assert_file_content "$LEGACY_SOURCE/source-state.txt" "legacy source state"
 assert_unrelated_vault_state "$KNOWN_VAULT"
 
@@ -136,7 +166,8 @@ ln -s "$LEGACY_SOURCE" "$REPOINT_GALLERY"
 
 run_deploy "$REPOINT_VAULT"
 
-assert_symlink_target "$REPOINT_GALLERY" "$CURRENT_SOURCE"
+assert_deployed_files "$REPOINT_GALLERY" "$CURRENT_SOURCE"
+assert_file_content "$LEGACY_SOURCE/main.js" "legacy bundle"
 assert_file_content "$LEGACY_SOURCE/source-state.txt" "legacy source state"
 assert_unrelated_vault_state "$REPOINT_VAULT"
 

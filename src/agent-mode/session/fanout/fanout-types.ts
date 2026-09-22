@@ -157,7 +157,7 @@ export function snapshotFanoutTurn(turn: FanoutTurn): FanoutTurn {
  * Provider-neutral instruction for the main agent's narrative summary. Frames a
  * NEW user turn (never replaces a backend system prompt) and is read-only.
  */
-export const FANOUT_SUMMARY_INSTRUCTION =
+const FANOUT_SUMMARY_INSTRUCTION =
   "You are a neutral synthesizer. The labeled blocks below are what SEVERAL " +
   "DIFFERENT AI agents each produced in response to the user's request. Write a " +
   "synthesis for the user ABOUT their outputs — you are reporting on what the " +

@@ -3,6 +3,15 @@ set -euo pipefail
 
 OBSIDIAN_BIN="${OBSIDIAN_BIN:-/Applications/Obsidian.app/Contents/MacOS/obsidian}"
 
+# The default misses non-standard installs. Fall back to a Spotlight lookup
+# before giving up and warning at the reload step.
+if [[ ! -x "$OBSIDIAN_BIN" ]]; then
+  located="$(mdfind "kMDItemCFBundleIdentifier == 'md.obsidian'" 2>/dev/null | head -n 1)"
+  if [[ -n "$located" && -x "$located/Contents/MacOS/obsidian" ]]; then
+    OBSIDIAN_BIN="$located/Contents/MacOS/obsidian"
+  fi
+fi
+
 if [[ -z "${COPILOT_TEST_VAULT_PATH:-}" ]]; then
   cat >&2 <<'EOF'
 error: COPILOT_TEST_VAULT_PATH is not set.
@@ -62,7 +71,7 @@ if [[ -n "$(git -C "$WORKTREE_ROOT" status --porcelain --untracked-files=normal 
   BUILD_STATE="dirty"
 fi
 
-# The plugin type check covers dev/gallery, and the gallery's generated story
+# The plugin type check covers gallery, and the gallery's generated story
 # index is untracked build output. Regenerate it first so a story renamed or
 # deleted on this branch cannot fail the plugin build with a dangling import.
 echo "==> Regenerating gallery story index"
@@ -138,16 +147,16 @@ BUILD_TAG="$(
 echo "==> Wrote development manifest (build: $BUILD_TAG, branch: $BRANCH)"
 
 # The component gallery plugin ships a near-complete copy of the production
-# stylesheet (scripts/gallery/prepare-gallery-css.mjs concatenates src/styles/tailwind.css
+# stylesheet (gallery/scripts/prepare-gallery-css.mjs concatenates src/styles/tailwind.css
 # into its source), and Obsidian injects every enabled plugin's styles.css
 # document-wide. Both copies then compete at equal specificity in shared views, so
 # a gallery copy built from an older src/styles/tailwind.css silently outranks the
 # CSS deployed above and the plugin renders pre-change behavior.
-GALLERY_MANIFEST="$WORKTREE_ROOT/dev/gallery/manifest.json"
+GALLERY_MANIFEST="$WORKTREE_ROOT/gallery/manifest.json"
 GALLERY_ID=""
 if [[ -f "$GALLERY_MANIFEST" ]]; then
   if ! GALLERY_ID="$(node -e '
-    const id = require("./dev/gallery/manifest.json").id;
+    const id = require("./gallery/manifest.json").id;
     if (typeof id !== "string" || id.length === 0) process.exit(1);
     process.stdout.write(id);
   ')" || [[ ! "$GALLERY_ID" =~ ^[a-z0-9-]+$ ]]; then
@@ -158,11 +167,9 @@ fi
 
 if [[ -n "$GALLERY_ID" ]]; then
   GALLERY_PLUGIN_DIR="$VAULT_PATH/.obsidian/plugins/$GALLERY_ID"
-  # gallery-vault.sh symlinks its whole source directory into the vault, so the
-  # live copy belongs to whichever worktree deployed it last and dangles once
-  # that worktree is deleted. Taking it over here keeps both stylesheets in step
-  # and means a vanished worktree never blocks testing another branch. Obsidian
-  # injects styles.css when a plugin is enabled, so a rewrite in place would not
+  # Refresh the gallery from this worktree to keep both stylesheets in step,
+  # including installations with legacy symlinks to a deleted worktree. Obsidian
+  # injects styles.css when a plugin is enabled, so copying alone would not
   # re-inject it; gallery:vault rebuilds and reloads, which does.
   if [[ -e "$GALLERY_PLUGIN_DIR" || -L "$GALLERY_PLUGIN_DIR" ]]; then
     echo "==> Redeploying the gallery plugin from this worktree so both stylesheets match"

@@ -2,8 +2,6 @@ import {
   $getSelection,
   $isRangeSelection,
   $createTextNode,
-  $setSelection,
-  $createRangeSelection,
   LexicalNode,
   TextNode,
   createCommand,
@@ -132,40 +130,6 @@ function splitTextAtRange(
 }
 
 /**
- * Replaces a text node with multiple nodes and sets selection appropriately
- * @param textNode The text node to replace
- * @param nodes The nodes to replace it with
- * @param setCursorAfter Whether to set cursor after the replacement
- */
-function $replaceTextNodeWithNodes(
-  textNode: TextNode,
-  nodes: LexicalNode[],
-  setCursorAfter: boolean = true
-): void {
-  if (nodes.length === 1 && nodes[0].getType() === "text") {
-    // Simple replacement with just text
-    textNode.replace(nodes[0]);
-    if (setCursorAfter) {
-      $setSelectionAfterNode(nodes[0]);
-    }
-  } else {
-    // Complex replacement with multiple nodes
-    for (let i = 0; i < nodes.length; i++) {
-      if (i === 0) {
-        textNode.replace(nodes[i]);
-      } else {
-        nodes[i - 1].insertAfter(nodes[i]);
-      }
-    }
-    // Set selection after the last inserted node
-    if (setCursorAfter && nodes.length > 0) {
-      const lastNode = nodes[nodes.length - 1];
-      $setSelectionAfterNode(lastNode);
-    }
-  }
-}
-
-/**
  * Inserts a pill node with optional space after, handling both replacement and insertion scenarios
  * @param anchorNode The anchor text node
  * @param beforeText Text that comes before the pill
@@ -200,28 +164,6 @@ function $insertPillWithOptionalSpace(
 
   // Set cursor after the pill (and space if added)
   pillNode.selectNext();
-}
-
-/**
- * Sets the selection to be after the specified node
- * @param node The node to position the selection after
- */
-function $setSelectionAfterNode(node: LexicalNode): void {
-  if (node.getType() === "text") {
-    const textNode = node as TextNode;
-    const textLength = textNode.getTextContent().length;
-    textNode.select(textLength, textLength);
-  } else {
-    // For non-text nodes (like pills), set selection after the node using parent element
-    const parent = node.getParent();
-    if (parent) {
-      const rangeSelection = $createRangeSelection();
-      const nodeIndex = node.getIndexWithinParent();
-      rangeSelection.anchor.set(parent.getKey(), nodeIndex + 1, "element");
-      rangeSelection.focus.set(parent.getKey(), nodeIndex + 1, "element");
-      $setSelection(rangeSelection);
-    }
-  }
 }
 
 /**
@@ -636,82 +578,6 @@ export function $insertTextWithPills(
       selection.removeText();
       selection.insertNodes(nodes);
     }
-  }
-}
-
-/**
- * Replaces text in a specific range with parsed content.
- * Useful for slash commands and other scenarios where you need to replace a portion of text.
- *
- * @param app The Obsidian `App` instance used to resolve note/folder references
- * @param startOffset The start position to replace from
- * @param endOffset The end position to replace to
- * @param newText The new text content to insert with pill conversion
- * @param options Configuration options
- */
-export function $replaceTextRangeWithPills(
-  app: App,
-  startOffset: number,
-  endOffset: number,
-  newText: string,
-  options: InsertTextOptions = {}
-): void {
-  const {
-    enableURLPills = false,
-    enableToolPills = false,
-    enableCustomTemplatePills = false,
-  } = options;
-
-  const selection = $getSelection();
-  if (!$isRangeSelection(selection)) return;
-
-  const anchor = selection.anchor;
-  const anchorNode = anchor.getNode();
-
-  if (anchorNode.getType() !== "text") return;
-
-  const textNode = anchorNode as TextNode;
-  const textContent = textNode.getTextContent();
-
-  // Parse the new text for pills
-  const segments = parseTextForPills(app, newText, {
-    includeNotes: true,
-    includeURLs: enableURLPills,
-    includeTools: enableToolPills,
-    includeCustomTemplates: enableCustomTemplatePills,
-  });
-
-  if (segments.length === 1 && segments[0].type === "text") {
-    // Simple case: just text, no pills needed
-    const { beforeText, afterText } = splitTextAtRange(textContent, startOffset, endOffset);
-    const finalText = beforeText + segments[0].content + afterText;
-    textNode.setTextContent(finalText);
-
-    // Set cursor after inserted text
-    const newOffset = beforeText.length + segments[0].content.length;
-    textNode.select(newOffset, newOffset);
-  } else {
-    // Complex case: we have pills to insert
-    const { beforeText, afterText } = splitTextAtRange(textContent, startOffset, endOffset);
-
-    // Create nodes for the replacement
-    const nodes: LexicalNode[] = [];
-
-    // Add before text if any
-    if (beforeText) {
-      nodes.push($createTextNode(beforeText));
-    }
-
-    // Add parsed content nodes
-    nodes.push(...createNodesFromSegments(segments));
-
-    // Add after text if any
-    if (afterText) {
-      nodes.push($createTextNode(afterText));
-    }
-
-    // Replace the current text node with all new nodes
-    $replaceTextNodeWithNodes(textNode, nodes);
   }
 }
 

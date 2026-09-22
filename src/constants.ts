@@ -289,12 +289,6 @@ export enum ModelCapability {
   WEB_SEARCH = "websearch",
 }
 
-export const MODEL_CAPABILITIES: Record<ModelCapability, string> = {
-  reasoning: "This model supports general reasoning tasks.",
-  vision: "This model supports image inputs.",
-  websearch: "This model can access the internet.",
-};
-
 export const BUILTIN_CHAT_MODELS: CustomModel[] = [
   // Enabled models first
   {
@@ -741,8 +735,6 @@ export const RESTRICTION_MESSAGES = {
     `${extension.toUpperCase()} files are not supported in the current mode.`,
 } as const;
 
-export const OPENCODE_RELEASE_URL_TEMPLATE =
-  "https://github.com/sst/opencode/releases/download/v{version}/{asset}";
 export const OPENCODE_RELEASE_API_URL_TEMPLATE =
   "https://api.github.com/repos/sst/opencode/releases/tags/v{version}";
 

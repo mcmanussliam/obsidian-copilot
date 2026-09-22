@@ -29,11 +29,7 @@ interface FileParser {
 /**
  * Thin wrapper that reads the output folder from settings and delegates to the pure function.
  */
-export async function saveConvertedDocOutput(
-  file: TFile,
-  content: string,
-  vault: Vault
-): Promise<void> {
+async function saveConvertedDocOutput(file: TFile, content: string, vault: Vault): Promise<void> {
   const outputFolder = getSettings().convertedDocOutputFolder ?? "";
   await saveConvertedDocOutputCore(file, content, vault, outputFolder);
 }

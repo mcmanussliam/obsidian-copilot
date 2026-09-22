@@ -299,7 +299,7 @@ Six commits on [PR 2706](https://github.com/logancyang/obsidian-copilot/pull/270
 
 Net effect on the diff: 53 files, +1,485 / -1,773. The change removes more than it adds, because the generated-mirror machinery, the duplicate backend injection paths, and the prompt-editor UI all go away and are replaced by one small instruction-file module.
 
-Test status at time of writing: 5,303 passing. Two failures in `dev/gallery/gen-gallery-stories.test.ts`, which fail identically on `v4-preview` (the generator imports `glob` from `node:fs/promises`, which Node 20.18.1 does not export). Pre-existing and unrelated.
+Test status at time of writing: 5,303 passing. Two failures in `gallery/tests/gen-gallery-stories.test.ts`, which fail identically on `v4-preview` (the generator imports `glob` from `node:fs/promises`, which Node 20.18.1 does not export). Pre-existing and unrelated.
 
 ## Open follow-ups
 

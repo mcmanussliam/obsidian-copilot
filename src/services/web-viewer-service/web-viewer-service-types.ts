@@ -152,7 +152,7 @@ export class WebViewerLeafNotFoundError extends WebViewerError {
 }
 
 /** Error thrown when webview element is not available or not ready. */
-export class WebviewUnavailableError extends WebViewerError {
+class WebviewUnavailableError extends WebViewerError {
   constructor(message: string) {
     super(message);
     this.name = "WebviewUnavailableError";

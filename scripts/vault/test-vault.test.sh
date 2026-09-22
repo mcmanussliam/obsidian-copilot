@@ -129,8 +129,8 @@ assert_manifest dirty
 
 GALLERY_ID="copilot-component-gallery"
 GALLERY_PLUGIN_DIR="$VAULT_ROOT/.obsidian/plugins/$GALLERY_ID"
-mkdir -p "$FIXTURE_ROOT/dev/gallery"
-cat >"$FIXTURE_ROOT/dev/gallery/manifest.json" <<EOF
+mkdir -p "$FIXTURE_ROOT/gallery"
+cat >"$FIXTURE_ROOT/gallery/manifest.json" <<EOF
 {
   "id": "$GALLERY_ID",
   "name": "Gallery",
@@ -148,7 +148,7 @@ if grep -qi "gallery" "$DEPLOY_STDERR"; then
   exit 1
 fi
 
-ln -s "$FIXTURE_ROOT/dev/gallery" "$GALLERY_PLUGIN_DIR"
+ln -s "$FIXTURE_ROOT/gallery" "$GALLERY_PLUGIN_DIR"
 run_deploy
 if ! grep -q "npm run gallery:vault" "$DEPLOY_CALL_LOG"; then
   echo "did not rebuild the gallery deployed from this worktree" >&2
@@ -161,7 +161,7 @@ if [[ -z "$GALLERY_DEPLOY_LINE" || -z "$FIRST_RELOAD_LINE" || "$FIRST_RELOAD_LIN
   exit 1
 fi
 
-FOREIGN_GALLERY="$TEST_ROOT/other-worktree/dev/gallery"
+FOREIGN_GALLERY="$TEST_ROOT/other-worktree/gallery"
 mkdir -p "$FOREIGN_GALLERY"
 rm "$GALLERY_PLUGIN_DIR"
 ln -s "$FOREIGN_GALLERY" "$GALLERY_PLUGIN_DIR"

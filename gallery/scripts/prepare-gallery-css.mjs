@@ -5,8 +5,8 @@ import process from "node:process";
 
 const projectRoot = process.cwd();
 const productionSourcePath = path.join(projectRoot, "src/styles/tailwind.css");
-const galleryChromePath = path.join(projectRoot, "dev/gallery/gallery.css");
-const outputPath = path.join(projectRoot, "dev/gallery/styles.source.css");
+const galleryChromePath = path.join(projectRoot, "gallery/src/gallery.css");
+const outputPath = path.join(projectRoot, "gallery/dist/styles.source.css");
 
 async function composeGalleryCss() {
   const [productionSource, galleryChrome] = await Promise.all([

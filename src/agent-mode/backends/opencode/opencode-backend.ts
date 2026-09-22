@@ -45,10 +45,10 @@ export const OPENCODE_PROVIDER_MAP: Partial<Record<ChatModelProviders, string>> 
  * to Copilot's canonical `default` mode (writes/exec allowed, but the user
  * approves each request). The built-in `build` agent doesn't ask.
  */
-export const OPENCODE_COPILOT_BUILD_AGENT_ID = "copilot-build";
+const OPENCODE_COPILOT_BUILD_AGENT_ID = "copilot-build";
 
 /** OpenCode's built-in build agent id (full perms, no permission asks). */
-export const OPENCODE_BUILTIN_BUILD_AGENT_ID = "build";
+const OPENCODE_BUILTIN_BUILD_AGENT_ID = "build";
 
 /**
  * Shared canonical→native agent-id mapping for OpenCode. Used both at spawn

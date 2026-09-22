@@ -47,7 +47,7 @@ export function handlePickerSwitchError(err: unknown, action: "model" | "effort"
 }
 
 /** A pseudo-provider value used for agent-only synthesized entries. */
-export const AGENT_PROVIDER = "agent";
+const AGENT_PROVIDER = "agent";
 
 /**
  * Preserves usable and stranded choices for one backend so credential or catalog drift never hides recovery paths.
@@ -246,7 +246,7 @@ export function synthesizeAgentEntry(
  * `_disabledReason` is the contract `ModelSelector` / `ModelEffortPicker`
  * use to disable the row and display the right-side label.
  */
-export function synthesizePreloadPlaceholder(
+function synthesizePreloadPlaceholder(
   descriptor: BackendDescriptor,
   status: "pending" | "error"
 ): ModelSelectorEntry {
@@ -265,7 +265,7 @@ export function synthesizePreloadPlaceholder(
  * Resolve a picker entry to its baseModelId. All picker entries from agent
  * backends are synthesized — the baseModelId lives in `name`.
  */
-export function resolveBaseModelId(entry: ModelSelectorEntry): string | undefined {
+function resolveBaseModelId(entry: ModelSelectorEntry): string | undefined {
   return entry.provider === AGENT_PROVIDER ? entry.name : undefined;
 }
 
@@ -590,7 +590,7 @@ export function resolveEffortOptions(
  * the drafted `(baseModelId, effort)` — the user's effort choice survives
  * the backend swap, and the saved default for either backend is left alone.
  */
-export function buildCommitSelection(
+function buildCommitSelection(
   manager: AgentSessionManager,
   ctx: ModelActiveContext,
   entries: ModelSelectorEntry[],

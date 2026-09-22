@@ -54,9 +54,7 @@ import { translateBackendState } from "@/agent-mode/session/translate-backend-st
 
 // ---- Catalog wire → neutral (pass-through, structural alias) -----------
 
-export function modelStateFromAcp(
-  state: SessionModelState | null | undefined
-): RawModelState | null {
+function modelStateFromAcp(state: SessionModelState | null | undefined): RawModelState | null {
   if (!state) return null;
   return {
     currentModelId: state.currentModelId,
@@ -68,7 +66,7 @@ export function modelStateFromAcp(
   };
 }
 
-export function modeStateFromAcp(state: SessionModeState | null | undefined): RawModeState | null {
+function modeStateFromAcp(state: SessionModeState | null | undefined): RawModeState | null {
   if (!state) return null;
   return {
     currentModeId: state.currentModeId,
@@ -80,7 +78,7 @@ export function modeStateFromAcp(state: SessionModeState | null | undefined): Ra
   };
 }
 
-export function configOptionsFromAcp(
+function configOptionsFromAcp(
   options: SessionConfigOption[] | null | undefined
 ): BackendConfigOption[] | null {
   if (!options) return null;
@@ -158,7 +156,7 @@ export function stopReasonFromAcp(reason: AcpStopReason): StopReason {
 
 // ---- Tool kind / status (ACP enum subsets) -----------------------------
 
-export function toolKindFromAcp(kind: AcpToolKind | undefined): AgentToolKind | undefined {
+function toolKindFromAcp(kind: AcpToolKind | undefined): AgentToolKind | undefined {
   if (kind == null) return undefined;
   return kind;
 }
@@ -178,7 +176,7 @@ export function promptContentToAcp(blocks: PromptContent[]): ContentBlock[] {
   });
 }
 
-export function promptContentFromAcp(block: ContentBlock): PromptContent | null {
+function promptContentFromAcp(block: ContentBlock): PromptContent | null {
   if (block.type === "text") return { type: "text", text: block.text };
   if (block.type === "image") return { type: "image", mimeType: block.mimeType, data: block.data };
   if (block.type === "resource_link")
@@ -454,31 +452,6 @@ function permissionOptionFromAcp(
       : "reject_once",
   };
   return presentPermissionOption?.(option, opt._meta) ?? option;
-}
-
-export function permissionPromptToAcp(prompt: PermissionPrompt): RequestPermissionRequest {
-  return {
-    sessionId: prompt.sessionId,
-    toolCall: {
-      toolCallId: prompt.toolCall.toolCallId,
-      title: prompt.toolCall.title,
-      kind: prompt.toolCall.kind,
-      status: prompt.toolCall.status ?? "pending",
-      rawInput: prompt.toolCall.rawInput,
-    },
-    options: prompt.options.map((o) => ({
-      optionId: o.optionId,
-      name: o.name,
-      kind: o.kind,
-    })),
-  };
-}
-
-export function acpDecisionFromResponse(resp: RequestPermissionResponse): PermissionDecision {
-  if (resp.outcome.outcome === "cancelled") {
-    return { outcome: { outcome: "cancelled" } };
-  }
-  return { outcome: { outcome: "selected", optionId: resp.outcome.optionId } };
 }
 
 export function decisionToAcpResponse(decision: PermissionDecision): RequestPermissionResponse {

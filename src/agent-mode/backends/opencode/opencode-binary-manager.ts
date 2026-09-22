@@ -173,7 +173,7 @@ export function computeInstallState(
 }
 
 /** Read the OpenCode-specific settings slice from current settings. */
-export function readOpencodeSettings(): OpencodeBackendSettings {
+function readOpencodeSettings(): OpencodeBackendSettings {
   return getSettings().agentMode?.backends?.opencode ?? {};
 }
 

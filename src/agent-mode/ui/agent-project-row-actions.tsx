@@ -53,10 +53,10 @@ interface AgentProjectRowActionsProps {
 
 /**
  * Inline action cluster for a project row: Reveal in vault · Edit · Delete.
- * Drop into {@link AgentHomeListRow}'s `trailing` slot — the row reveals it on
- * hover / keyboard focus in the relative time's place, the same way the Recent
- * Chats rows surface their open / rename / delete buttons, so the two shelf tabs
- * read as one component family (this replaces the older `⋯` overflow dropdown).
+ * Drop into a row's `trailing` slot — the row reveals it on
+ * hover / keyboard focus in the relative time's place, the same way chat-history
+ * rows surface their open / rename / delete buttons (this replaces the older
+ * `⋯` overflow dropdown).
  *
  * Edit and Delete deliberately stay modal-backed rather than inline: Edit is a
  * multi-field form (the full {@link AddProjectModal}), and Delete keeps the

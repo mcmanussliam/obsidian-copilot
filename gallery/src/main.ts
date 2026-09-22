@@ -21,7 +21,7 @@ import {
   inspectStoryCase,
   resolveObsidianColorTokens,
 } from "./audit";
-import { modules, presentationalComponentCount } from "./stories.generated";
+import { modules, presentationalComponentCount } from "../dist/stories.generated";
 
 export const GALLERY_VIEWTYPE = "copilot-component-gallery";
 

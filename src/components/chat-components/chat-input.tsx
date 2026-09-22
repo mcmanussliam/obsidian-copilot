@@ -798,7 +798,7 @@ const ChatInput = React.forwardRef<ChatInputHandle, ChatInputProps>(function Cha
         modePickerOverride?.value === "plan" &&
           "tw-shadow-[0_0_10px_rgba(var(--color-blue-rgb),0.18)] tw-border-blue/60",
         modePickerOverride?.value === "auto" &&
-          "tw-shadow-[0_0_10px_rgba(var(--color-red-rgb),0.18)] tw-border-red/60"
+          "tw-shadow-[0_0_10px_rgba(var(--color-orange-rgb),0.18)] tw-border-orange/60"
       )}
       ref={containerRef}
     >

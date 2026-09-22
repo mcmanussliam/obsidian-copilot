@@ -5,7 +5,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
-const GENERATOR_PATH = path.resolve(process.cwd(), "scripts/gallery/gen-gallery-stories.mjs");
+const GENERATOR_PATH = path.resolve(process.cwd(), "gallery/scripts/gen-gallery-stories.mjs");
 
 async function addFile(projectRoot: string, filePath: string): Promise<void> {
   const absolutePath = path.join(projectRoot, filePath);
@@ -36,12 +36,12 @@ describe("gen-gallery-stories", () => {
 
       await execFileAsync(process.execPath, [GENERATOR_PATH], { cwd: projectRoot });
       const firstOutput = await readFile(
-        path.join(projectRoot, "dev/gallery/stories.generated.ts"),
+        path.join(projectRoot, "gallery/dist/stories.generated.ts"),
         "utf8"
       );
       await execFileAsync(process.execPath, [GENERATOR_PATH], { cwd: projectRoot });
       const secondOutput = await readFile(
-        path.join(projectRoot, "dev/gallery/stories.generated.ts"),
+        path.join(projectRoot, "gallery/dist/stories.generated.ts"),
         "utf8"
       );
 
@@ -79,7 +79,7 @@ describe("gen-gallery-stories", () => {
 
       await execFileAsync(process.execPath, [GENERATOR_PATH], { cwd: projectRoot });
       const output = await readFile(
-        path.join(projectRoot, "dev/gallery/stories.generated.ts"),
+        path.join(projectRoot, "gallery/dist/stories.generated.ts"),
         "utf8"
       );
 

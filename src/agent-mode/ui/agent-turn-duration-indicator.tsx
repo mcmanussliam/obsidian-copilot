@@ -65,7 +65,7 @@ export const AgentTurnDurationIndicator: React.FC<AgentTurnDurationIndicatorProp
           !props.inline && "tw-w-full"
         )}
       >
-        <span className="tw-flex tw-size-icon-xs tw-shrink-0 tw-items-center tw-justify-start">
+        <span className="tw-flex tw-size-icon-xs tw-shrink-0 tw-scale-75 tw-items-center tw-justify-start">
           <CopilotSpinner animated={isRunning} />
         </span>
         <span>

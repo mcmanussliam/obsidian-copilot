@@ -3,15 +3,15 @@ import {
   type PluginViewRootHandle,
 } from "@/utils/react/mount-plugin-view-root";
 import { fireEvent, render, type RenderResult } from "@testing-library/react";
-import GalleryPlugin, { GALLERY_VIEWTYPE, type GalleryHandle } from "./main";
-import type { AuditReport } from "./audit";
-import type { GalleryViewState } from "./gallery";
+import GalleryPlugin, { GALLERY_VIEWTYPE, type GalleryHandle } from "../src/main";
+import type { AuditReport } from "../src/audit";
+import type { GalleryViewState } from "../src/gallery";
 import type { App, Command, PluginManifest, WorkspaceLeaf } from "obsidian";
 import type { ReactElement, ReactNode } from "react";
 import { MessageChannel as TestMessageChannel } from "worker_threads";
 
 jest.mock(
-  "./stories.generated",
+  "../dist/stories.generated",
   () => {
     const loaders = [
       jest.fn(() =>
@@ -124,7 +124,7 @@ interface RecordedViewState {
 }
 
 function getGeneratedMock(): { loaders: jest.Mock[] } {
-  return jest.requireMock<{ galleryGeneratedMock: { loaders: jest.Mock[] } }>("./stories.generated")
+  return jest.requireMock<{ galleryGeneratedMock: { loaders: jest.Mock[] } }>("../dist/stories.generated")
     .galleryGeneratedMock;
 }
 

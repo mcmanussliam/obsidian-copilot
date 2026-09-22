@@ -1426,7 +1426,7 @@ const CONTROL_CHAR_RE = /[\u0000-\u001f\u007f]/;
  * @returns Discriminated union: `{ ok: true, folder }` with the cleaned
  *   value, or `{ ok: false, reason }` for inline UI validation errors.
  */
-export function validateSkillsFolder(
+function validateSkillsFolder(
   value: string
 ): { ok: true; folder: string } | { ok: false; reason: string } {
   if (typeof value !== "string" || value.trim().length === 0) {

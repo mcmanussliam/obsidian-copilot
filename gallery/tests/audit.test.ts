@@ -1,4 +1,4 @@
-import { getGalleryTheme, inspectStoryCase, resolveObsidianColorTokens } from "./audit";
+import { getGalleryTheme, inspectStoryCase, resolveObsidianColorTokens } from "../src/audit";
 
 /* eslint-disable obsidianmd/no-static-styles-assignment -- Exact computed-color fixtures are the behavior under test. */
 

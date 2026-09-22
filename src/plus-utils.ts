@@ -38,7 +38,7 @@ export function isSelfHostModeValid(): boolean {
 }
 
 /** Check if the model key is a Copilot Plus model. */
-export function isPlusModel(modelKey: string): boolean {
+function isPlusModel(modelKey: string): boolean {
   const settings = getSettings();
   const configuredModel = settings.configuredModels.find(
     (model) => model.configuredModelId === modelKey
@@ -83,15 +83,6 @@ export function isUsingLicensedModels(settings: CopilotSettings): boolean {
     const baseModelId = backend?.defaultModel?.baseModelId;
     return baseModelId !== undefined && LICENSED_DEFAULT_WIRE_IDS.has(baseModelId);
   });
-}
-
-/**
- * Synchronous check for paid (any valid license, incl. Lite) feature access. Use
- * this for the broad Plus-feature gates (model validation, UI state) that should
- * remain available to every paying user.
- */
-export function isPaidEnabled(): boolean {
-  return getSettings().isPaidUser === true;
 }
 
 /**
@@ -209,7 +200,7 @@ export function useIsPaidUser(): boolean | undefined {
  * Hook for tier >= Plus (excludes Lite) — the reactive gate for Plus-and-above
  * features.
  */
-export function useIsPlusUser(): boolean | undefined {
+function useIsPlusUser(): boolean | undefined {
   const settings = useSettingsValue();
   if (isEntitlementExpired(settings)) {
     return false;

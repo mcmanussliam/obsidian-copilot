@@ -3,10 +3,7 @@ import { render } from "@testing-library/react";
 import type { App } from "obsidian";
 import * as React from "react";
 import { useChatInput } from "@/context/chat-input-context";
-import {
-  GalleryChatInputProvider,
-  GalleryProviders,
-} from "@/components/gallery-hosts.fixtures";
+import { GalleryChatInputProvider, GalleryProviders } from "@/components/gallery-hosts.fixtures";
 
 interface ContextProbeProps {
   onRead: (app: App, eventTarget: EventTarget | undefined) => void;

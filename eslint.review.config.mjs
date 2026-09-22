@@ -3,12 +3,12 @@ import typescriptParser from "@typescript-eslint/parser";
 import obsidianmd from "eslint-plugin-obsidianmd";
 import { PlainTextParser } from "eslint-plugin-obsidianmd/dist/lib/plainTextParser.js";
 
-const sourceFiles = ["src/**/*.{ts,tsx}", "dev/gallery/**/*.{ts,tsx}"];
+const sourceFiles = ["src/**/*.{ts,tsx}", "gallery/**/*.{ts,tsx}"];
 
 export default [
   ...baseConfig,
   {
-    ignores: ["**/*.test.{js,jsx,ts,tsx}", "tests/mocks/**", "dev/gallery/esbuild.config.mjs"],
+    ignores: ["**/*.test.{js,jsx,ts,tsx}", "tests/mocks/**", "gallery/scripts/esbuild.config.mjs"],
   },
   {
     files: sourceFiles,
